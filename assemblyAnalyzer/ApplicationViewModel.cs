@@ -19,11 +19,16 @@ namespace assemblyAnalyze
             //cbOpenAssembly.Command = ApplicationCommands.Open;
             //cbOpenAssembly.Executed += openAssembly;
             app = getInventorApp();
+            if (app == null)
+            {
+                dsOpenFile.ShowMessage("Ошибка при подключении к Inventor API. Попробуйте перезапустить программу");
+                Environment.Exit(1);
+            }
         }
 
         ~ApplicationViewModel()
         {
-            app.Quit();
+            shutDownInventorApp();
         }
 
         private Inventor.Application app;
@@ -47,6 +52,7 @@ namespace assemblyAnalyze
                             pathFile = dsOpenFile.FilePath;
                             assemblyAn = new assemblyAnalyzer(pathFile);
                             assemblyAn.Initiolize(app);
+                            assemblyAn.getAllParts();
                             //...
                             dsOpenFile.ShowMessage("Открытие файла");
                         }
@@ -72,11 +78,23 @@ namespace assemblyAnalyze
             }
             catch
             {
-                invApp = Activator.CreateInstance(
-                    Type.GetTypeFromProgID("Inventor.Application")) as Inventor.Application;
+                try
+                {
+                    invApp = (Inventor.Application)Activator.CreateInstance(
+                        Type.GetTypeFromProgID("Inventor.Application"));
+                }
+                catch
+                {
+                    invApp = null;
+                }
                 //invApp.Visible = true;
             }
             return invApp;
+        }
+        public void shutDownInventorApp()
+        {
+            if (app != null)
+                app.Quit();
         }
     }
 }
