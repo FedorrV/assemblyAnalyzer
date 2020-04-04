@@ -24,124 +24,206 @@ namespace assemblyAnalyze
             }
         }
         List <string> componentsName = new List<string>();
+        List<PartDocument> partsDocs = new List<PartDocument>();
         Dictionary<string, string> partProperties = new Dictionary<string, string>();
-
+        Dictionary<string, string> partProperties1 = new Dictionary<string, string>();
+        Dictionary<string, string> partProperties2 = new Dictionary<string, string>();
+        Dictionary<string, string> partProperties3 = new Dictionary<string, string>();
 
         public void Initiolize(Inventor.Application app)
         {
-            assembly = (AssemblyDocument)app.Documents.Open(PathToFile, false) ;
-            //assembly = app.Documents.Add(DocumentTypeEnum.kAssemblyDocumentObject) as AssemblyDocument;
-            
-            //foreach (AssemblyComponentDefinition sss in assembly.ComponentDefinitions)
-            //{
-            //    //components.Add(sss.AttributeSets);
-            //    int cntAttr = sss.AttributeSets.Count;
-            //    //sss.BOM.BOMViews.
-            //    string revision = sss.BOM.RevisionId;
-            //    string [] strs = { "asdf", "aasdf" };
-            //    bool flag = false;
-            //    sss.BOM.GetPartNumberMergeSettings(out flag, out strs);
-            //    BOMStructureEnum b =sss.BOMStructure;
-            //}
+            try
+            {
+                assembly = (AssemblyDocument)app.Documents.Open(PathToFile, false);
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("Ошибка при попытке открытия файла, возможно файл повреждён или имеет не правильную структуру.");
+            }
         }
 
         public void getAllParts()
         {
-            getAllDefinition(assembly.ComponentDefinition.Occurrences);
+            getAllDefinitionParts(assembly);
+            int ass = assembly.ComponentDefinitions.Count;
         }
 
-        private void getAllDefinition(ComponentOccurrences occurrences)
+        private void getAllDefinitionParts(AssemblyDocument assemblyDoc)
         {
-            int cntComponents = assembly.ComponentDefinitions.Count;
-            int cntRef1 = assembly.ReferencedDocumentDescriptors.Count;
-            int cntRef = assembly.AllReferencedDocuments.Count;
-            foreach (Document temp in assembly.AllReferencedDocuments)
+            int cntRef = assemblyDoc.AllReferencedDocuments.Count;
+            foreach (Document curDoc in assemblyDoc.AllReferencedDocuments)
             {
-                PartDocument partDoc = temp as PartDocument;
-                string asd = partDoc.FullDocumentName;
-                componentsName.Add( temp.DisplayName);
-                //string asd = temp.PropertySets["Design Tracking Properties"]["Authority"].Value;
+                string val = curDoc.DisplayName;
+                if (curDoc.DocumentType == DocumentTypeEnum.kAssemblyDocumentObject)
+                {
+                    getAllDefinitionParts((AssemblyDocument)curDoc);
+                }
+                else if (curDoc.DocumentType == DocumentTypeEnum.kPartDocumentObject)
+                {
+                    PartDocument temp = partsDocs.Find(x => x.InternalName == curDoc.InternalName && x.RevisionId == curDoc.RevisionId);
+                    //PartDocument temp = partsDocs.Find(x => x == curDoc);
+                    if (temp == null)
+                    {
+                        partsDocs.Add((PartDocument)curDoc);
+                        componentsName.Add(curDoc.DisplayName);
+                    }
+                }
             }
+        }
 
-            foreach (ComponentOccurrence co in occurrences)
-            {
-                //co.Definition;
-            }
-                //AssemblyComponentDefinition compDef=  co.Parent;
-                ////compDef.BOMStructure
-                    
-                //int cnnt = compDef.BOM.BOMViews.Count;
-                //foreach (BOMView bv in compDef.BOM.BOMViews)
-                //{
-                //    int cntRows = bv.BOMRows.Count; 
-
-                //    foreach(BOMRow br in bv.BOMRows)
-                //    {
-                //        int cntComp = br.ComponentDefinitions.Count;
-                //        foreach (ComponentDefinition cd in br.ComponentDefinitions)
-                //        {
-                //            var ss = cd.Document.PropertySets.Count;
-                //            foreach (PropertySet ps in cd.Document.PropertySets)
-                //            {
-                //                int cntProp = ps.Count;
-
-                //                //var objj = ps.ItemByPropId[4];
-                //                    //var obj = ps.Item("Description").Value;
-                //                    //var obj = ps.InternalName;
-                //                    //var objs = ps.Name;
-                //                    //Property t = ps.ItemByPropId[i];
-                                
-                //            }
-                           
-                //        }
-                //    }
-                //}
-                ////AssemblyComponentDefinition acd = co.Definition as AssemblyComponentDefinition;
-                //if (co.DefinitionDocumentType == DocumentTypeEnum.kAssemblyDocumentObject)
-                //{
-                //    getAllDefinition((ComponentOccurrences)co.SubOccurrences );
-                //}
-                //else if (co.DefinitionDocumentType == DocumentTypeEnum.kPartDocumentObject)
-                //{
-                //    components.Add(co.Name);
-                //}
+        public void getAllProperties()
+        {
+            //ReferenceParameters modelParameters = partsDocs[2].ComponentDefinition.Parameters.ReferenceParameters;
+            //Dictionary<string, string> dict= new Dictionary<string, string>();
+            //int cnt = modelParameters.Count;
+            //foreach(ReferenceParameter mp in modelParameters)
+            //{
+            //    var obj1 = mp.Name;
+            //    var obj2 = mp.ModelValue;
+            //    var obj3 = mp.Value;
+            //    var obj4 = mp._Value;
             //}
+            int []propIds = getDesignTrackingProperties();
+           
+            foreach (int i in Enum.GetValues(typeof(PropertiesForDesignTrackingPropertiesEnum)))
+            {
+                Property tempProp = partsDocs[0].PropertySets["Design Tracking Properties"].ItemByPropId[i];
+                if (tempProp.Value != null && tempProp.Value.ToString() != "")
+                    partProperties.Add(tempProp.DisplayName + i.ToString(), tempProp.Value.ToString());
+            }
+            Asset tempAsset = partsDocs[1].ActiveMaterial;
+            string val = tempAsset.Name;
+            val = tempAsset.Name;
+            val = tempAsset.CategoryName; 
+            foreach(AssetValue av in tempAsset)
+            {
+                val = av.Name;
+                val = av.DisplayName;
+            }
+            //BOM BOMInfo = assembly.ComponentDefinition.BOM;
+
+            //int cnnt = BOMInfo.BOMViews.Count;
+            //foreach (BOMView bv in BOMInfo.BOMViews)
+            //{
+            //    int cntRows = bv.BOMRows.Count;
+
+            //    foreach (BOMRow br in bv.BOMRows)
+            //    {
+
+            //        int cntComp = br.ComponentDefinitions.Count;
+            //        foreach (ComponentDefinition cd in br.ComponentDefinitions)
+            //        {
+            //            var ss = cd.Document.PropertySets.Count;
+            //            partProperties.Clear();
+            //            partProperties1.Clear();
+            //            partProperties2.Clear();
+            //            partProperties3.Clear();
+            //            foreach (PropertySet ps in cd.Document.PropertySets)
+            //            {
+            //                if(ps.DisplayName == "Inventor Document Summary Information")
+            //                {
+            //                    foreach(int i in Enum.GetValues(typeof(PropertiesForDocSummaryInformationEnum))){
+            //                        Property tempProp = ps.ItemByPropId[i];
+            //                        if (tempProp.Value != null && tempProp.Value.ToString() != "")
+            //                            partProperties.Add(tempProp.DisplayName, tempProp.Value.ToString());
+            //                    }
+            //                }
+            //                else if(ps.Name == "Design Tracking Properties")
+            //                {
+            //                    foreach (int i in Enum.GetValues(typeof(PropertiesForDesignTrackingPropertiesEnum))){
+            //                        Property tempProp = ps.ItemByPropId[i];
+            //                        if (tempProp.Value != null && tempProp.Value.ToString() != "")
+            //                            partProperties.Add(tempProp.DisplayName+i.ToString(), tempProp.Value.ToString());
+            //                    }
+            //                }
+            //                else if (ps.Name == "Inventor Summary Information")
+            //                {
+            //                    foreach (int i in Enum.GetValues(typeof(PropertiesForSummaryInformationEnum))){
+            //                        if (i == 12 || i==17)
+            //                            continue;
+            //                        Property tempProp = ps.ItemByPropId[i];
+            //                        var value = tempProp.Value;
+            //                        if (tempProp.Value != null && tempProp.Value.ToString() != "")
+            //                            partProperties.Add(tempProp.DisplayName, tempProp.Value.ToString());
+            //                    }
+            //                }
+            //                else if (ps.Name == "Inventor User Defined Properties" && ps.Count != 0)
+            //                {
+            //                    foreach (int i in Enum.GetValues(typeof(PropertiesForUserDefinedPropertiesEnum))){
+            //                        Property tempProp = ps.ItemByPropId[i];
+            //                        if (tempProp.Value != null && tempProp.Value.ToString() != "")
+            //                            partProperties.Add(tempProp.DisplayName, tempProp.Value.ToString());
+            //                    }
+            //                }
+
+
+
+
+            //            }
+
+            //        }
+            //        int adas = 0;
+            //    }
+            //}
+        }
+
+            private  int [] getDesignTrackingProperties()
+        {
+            int[] propIds = {
+                4,
+                5,
+                7,
+                9,
+                10,
+                11,
+                12,
+                13,
+                17,
+                20,
+                21,
+                23,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                71,
+                72,
+                73
+            };
+            return propIds;
         }
     }
 }
 
-
-//foreach (Document temp in assembly.AllReferencedDocuments)
-//{
-//    int sdf = temp.PropertySets.Count;
-//    List<string> DocSummaryValues = new List<string>();
-//    List<string> DesignTrackValues = new List<string>();
-//    foreach (PropertySet item in temp.PropertySets)
-//    {
-//        string propName = item.Name;
-//        if (propName == "Inventor Document Summary Information")
-//        {
-//            var obj = item.ItemByPropId[2].Value;
-//            DocSummaryValues.Add(item.ItemByPropId[2].Value);
-//            DocSummaryValues.Add(item.ItemByPropId[15].Value);
-//            DocSummaryValues.Add(item.ItemByPropId[14].Value);
-//        }
-//        else if (propName == "Design Tracking Properties")
-//        {
-//            var obj = item.ItemByPropId[72].Value;
-//            DesignTrackValues.Add(item.ItemByPropId[72].Value);
-//            DesignTrackValues.Add(item.ItemByPropId[43].Value);
-//            DesignTrackValues.Add(item.ItemByPropId[23].Value);
-//            DesignTrackValues.Add(item.ItemByPropId[56].Value);
-//            DesignTrackValues.Add(item.ItemByPropId[10].Value);
-//        }
-//        else if (propName == "Inventor Summary Information")
-//        {
-//            string a = item.ItemByPropId[4].Value;
-//            string b = item.ItemByPropId[6].Value;
-//            string c = item.ItemByPropId[2].Value;
-//        }
-//    }
-//    //ObjectTypeEnum ad = temp.PropertySets[i].Type;
-//}
 

@@ -49,12 +49,21 @@ namespace assemblyAnalyze
                         String pathFile;
                         if (dsOpenFile.OpenFileDialog("Assembly files|*.iam"))
                         {
-                            pathFile = dsOpenFile.FilePath;
-                            assemblyAn = new assemblyAnalyzer(pathFile);
-                            assemblyAn.Initiolize(app);
-                            assemblyAn.getAllParts();
-                            //...
-                            dsOpenFile.ShowMessage("Открытие файла");
+                            try
+                            {
+                                pathFile = dsOpenFile.FilePath;
+                                assemblyAn = new assemblyAnalyzer(pathFile);
+                                assemblyAn.Initiolize(app);
+                                assemblyAn.getAllParts();
+                                assemblyAn.getAllProperties();
+                                //...
+                                dsOpenFile.ShowMessage("Открытие файла");
+                            }
+                            catch(Exception ex)
+                            {
+                                dsOpenFile.ShowMessage(ex.Message);
+                            }
+                            
                         }
                     })
                     );
@@ -80,8 +89,8 @@ namespace assemblyAnalyze
             {
                 try
                 {
-                    invApp = (Inventor.Application)Activator.CreateInstance(
-                        Type.GetTypeFromProgID("Inventor.Application"));
+                    invApp = Activator.CreateInstance(
+                        Type.GetTypeFromProgID("Inventor.Application")) as Inventor.Application;
                 }
                 catch
                 {
