@@ -1,4 +1,4 @@
-﻿using Inventor;
+﻿using InventorApprentice;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,14 +7,15 @@ using System.Threading.Tasks;
 
 namespace assemblyAnalyze
 {
-    class assemblyAnalyzer
+    class AssemblyAnalyzer
     {
-        public assemblyAnalyzer(string pathToFile)
+        public AssemblyAnalyzer(string pathToFile, ApprenticeServerComponent aprServer)
         {
             this.pathToFile = pathToFile;
+            OpenAssembly(aprServer);
         }
 
-        private AssemblyDocument assembly;
+        private ApprenticeServerDocument assembly;
         private string pathToFile;
         public string PathToFile
         {
@@ -24,21 +25,20 @@ namespace assemblyAnalyze
             }
         }
         List <string> componentsName = new List<string>();
-        List<PartDocument> partsDocs = new List<PartDocument>();
-        Dictionary<string, string> partProperties = new Dictionary<string, string>();
-        Dictionary<string, string> partProperties1 = new Dictionary<string, string>();
-        Dictionary<string, string> partProperties2 = new Dictionary<string, string>();
-        Dictionary<string, string> partProperties3 = new Dictionary<string, string>();
+        List <Dictionary<string, string>> partProperties = new List <Dictionary<string, string>>();
+        List<ApprenticeServerDocument> parts = new List<ApprenticeServerDocument>();
 
-        public void Initiolize(Inventor.Application app)
+        private void OpenAssembly(ApprenticeServerComponent app)
         {
             try
             {
-                assembly = (AssemblyDocument)app.Documents.Open(PathToFile, false);
+                assembly = app.Open(PathToFile);
+                if(assembly.DocumentType != DocumentTypeEnum.kAssemblyDocumentObject)
+                    throw new Exception("Данный файл не является файлом сборки Inventor.");
             }
             catch(Exception ex)
             {
-                throw new Exception("Ошибка при попытке открытия файла, возможно файл повреждён или имеет не правильную структуру.");
+                throw new Exception("Ошибка при попытке открытия файла, возможно файл имеет правильную структуру или создан в более поздней версии.");
             }
         }
 
@@ -48,23 +48,23 @@ namespace assemblyAnalyze
             int ass = assembly.ComponentDefinitions.Count;
         }
 
-        private void getAllDefinitionParts(AssemblyDocument assemblyDoc)
+        private void getAllDefinitionParts(ApprenticeServerDocument assemblyDoc)
         {
             int cntRef = assemblyDoc.AllReferencedDocuments.Count;
-            foreach (Document curDoc in assemblyDoc.AllReferencedDocuments)
+            foreach (ApprenticeServerDocument curDoc in assemblyDoc.AllReferencedDocuments)
             {
                 string val = curDoc.DisplayName;
                 if (curDoc.DocumentType == DocumentTypeEnum.kAssemblyDocumentObject)
                 {
-                    getAllDefinitionParts((AssemblyDocument)curDoc);
+                    getAllDefinitionParts(curDoc);
                 }
                 else if (curDoc.DocumentType == DocumentTypeEnum.kPartDocumentObject)
                 {
-                    PartDocument temp = partsDocs.Find(x => x.InternalName == curDoc.InternalName && x.RevisionId == curDoc.RevisionId);
+                    ApprenticeServerDocument temp = parts.Find(x => x.InternalName == curDoc.InternalName && x.RevisionId == curDoc.RevisionId);
                     //PartDocument temp = partsDocs.Find(x => x == curDoc);
                     if (temp == null)
                     {
-                        partsDocs.Add((PartDocument)curDoc);
+                        parts.Add(curDoc);
                         componentsName.Add(curDoc.DisplayName);
                     }
                 }
@@ -87,19 +87,12 @@ namespace assemblyAnalyze
            
             foreach (int i in Enum.GetValues(typeof(PropertiesForDesignTrackingPropertiesEnum)))
             {
-                Property tempProp = partsDocs[0].PropertySets["Design Tracking Properties"].ItemByPropId[i];
+                Property tempProp = parts[0].PropertySets["Design Tracking Properties"].ItemByPropId[i];
                 if (tempProp.Value != null && tempProp.Value.ToString() != "")
                     partProperties.Add(tempProp.DisplayName + i.ToString(), tempProp.Value.ToString());
             }
-            Asset tempAsset = partsDocs[1].ActiveMaterial;
-            string val = tempAsset.Name;
-            val = tempAsset.Name;
-            val = tempAsset.CategoryName; 
-            foreach(AssetValue av in tempAsset)
-            {
-                val = av.Name;
-                val = av.DisplayName;
-            }
+            //Asset tempAsset = partsDocs[1];
+            
             //BOM BOMInfo = assembly.ComponentDefinition.BOM;
 
             //int cnnt = BOMInfo.BOMViews.Count;
@@ -155,9 +148,6 @@ namespace assemblyAnalyze
             //                            partProperties.Add(tempProp.DisplayName, tempProp.Value.ToString());
             //                    }
             //                }
-
-
-
 
             //            }
 
