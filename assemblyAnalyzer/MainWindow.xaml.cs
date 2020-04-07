@@ -12,7 +12,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Inventor;
 
 namespace assemblyAnalyze
 {
@@ -22,9 +21,6 @@ namespace assemblyAnalyze
     /// </summary>
     public partial class MainWindow : Window
     {
-        private static Inventor.Application invApp;
-        private static Inventor.Document curDocument;
-        private static Inventor.ContentCenter contentCenter;
         public MainWindow()
         {
             InitializeComponent();
