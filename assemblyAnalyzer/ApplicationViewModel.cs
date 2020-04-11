@@ -9,20 +9,40 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using InventorApprentice;
+using assemblyAnalyzer.models;
+using System.Data.Entity;
+using assemblyAnalyzer;
 
 namespace assemblyAnalyze
 {
     public class ApplicationViewModel : INotifyPropertyChanged
     {
+        private ApprenticeServerComponent aprServer; //экзепляр Apprentice Server
+        private AssemblyAnalyzer assemblyAnalyzer; //анализатор сборок
+        private DialogService dsOpenFile = new DialogService();
+        private string pathFile;
+        private ApplicationContext db;
+        IEnumerable<Part> parts;
+
         public ApplicationViewModel()
         {
-            //реализация команды "открыть сборку"
-            //cbOpenAssembly.Command = ApplicationCommands.Open;
-            //cbOpenAssembly.Executed += openAssembly;
             aprServer = new ApprenticeServerComponent();
             if (aprServer == null)
             {
-                dsOpenFile.ShowMessage("Ошибка при подключении к Inventor ApprenticeServer");
+                DialogService.ShowMessage("Ошибка при подключении к Inventor ApprenticeServer");
+                Environment.Exit(1);
+            }
+
+            try
+            {
+                db = new ApplicationContext();
+                db.Parts.Load();
+                
+                //parts = db.Parts.Local.ToBindingList();
+            }
+            catch(Exception ex)
+            {
+                DialogService.ShowMessage(ex.Message);//"При попытке подключиться к БД возникла ошибка.");
                 Environment.Exit(1);
             }
         }
@@ -30,12 +50,6 @@ namespace assemblyAnalyze
         ~ApplicationViewModel()
         {
         }
-
-        ApprenticeServerComponent aprServer;
-        private AssemblyAnalyzer assemblyAnalyzer;
-        private DialogService dsOpenFile = new DialogService();
-
-        private string pathFile;
 
         //команда "открыть сборку"
         //public CommandBinding cbOpenAssembly = new CommandBinding();
@@ -55,12 +69,10 @@ namespace assemblyAnalyze
                                 pathFile = dsOpenFile.FilePath;
                                 assemblyAnalyzer = new AssemblyAnalyzer(pathFile, aprServer);
                                 assemblyAnalyzer.getAllParts();
-                                //...
-                                dsOpenFile.ShowMessage("Открытие файла");
                             }
                             catch(Exception ex)
                             {
-                                dsOpenFile.ShowMessage(ex.Message);
+                                DialogService.ShowMessage(ex.Message);
                             }
                             
                         }
@@ -74,13 +86,6 @@ namespace assemblyAnalyze
         {
             if (PropertyChanged != null)
                 PropertyChanged(this, new PropertyChangedEventArgs(prop));
-        }
-
-        public void newFunc()
-        {
-            //ApprenticeServerComponent ap = new ApprenticeServerComponent();
-            //ApprenticeServerDocument doc = ap.Open(pathFile);
-            //doc.Type;
         }
     }
 }

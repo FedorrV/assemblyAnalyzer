@@ -10,20 +10,20 @@ namespace assemblyAnalyze.Services
 {
     class DialogService
     {
-        public string FilePath { get; set; }
-
+        private string filePath;
+        public string FilePath { get { return filePath; }}
         public bool OpenFileDialog(string filter)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = filter;
             if (openFileDialog.ShowDialog() == true)
             {
-                FilePath = openFileDialog.FileName;
+                filePath = openFileDialog.FileName;
                 return true;
             }
             return false;
         }
-        public void ShowMessage(string message)
+        public static void ShowMessage(string message)
         {
             MessageBox.Show(message);
         }
