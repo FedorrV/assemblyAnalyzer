@@ -15,28 +15,23 @@ using assemblyAnalyzer;
 
 namespace assemblyAnalyze
 {
-    public class ApplicationViewModel : INotifyPropertyChanged
+    public class AnalyzerViewModel : INotifyPropertyChanged
     {
-        private ApprenticeServerComponent aprServer; //экзепляр Apprentice Server
         private AssemblyAnalyzer assemblyAnalyzer; //анализатор сборок
+        private ApprenticeServerDocument activeAssembly;
         private DialogService dsOpenFile = new DialogService();
-        private string pathFile;
-        private ApplicationContext db;
+        private string filePath;
+        private AnalyzerContext db;
         IEnumerable<Part> parts;
 
-        public ApplicationViewModel()
+        public AnalyzerViewModel()
         {
-            aprServer = new ApprenticeServerComponent();
-            if (aprServer == null)
-            {
-                DialogService.ShowMessage("Ошибка при подключении к Inventor ApprenticeServer");
-                Environment.Exit(1);
-            }
-
+            
             try
             {
-                db = new ApplicationContext();
-                db.Parts.Load();
+                assemblyAnalyzer = new AssemblyAnalyzer();
+                //db = new ApplicationContext();
+                //db.Parts.Load();
                 
                 //parts = db.Parts.Local.ToBindingList();
             }
@@ -47,28 +42,29 @@ namespace assemblyAnalyze
             }
         }
 
-        ~ApplicationViewModel()
+        ~AnalyzerViewModel()
         {
         }
 
         //команда "открыть сборку"
-        //public CommandBinding cbOpenAssembly = new CommandBinding();
-
-        private RelayCommand rcOpenAssembly;
-        public RelayCommand RcOpenAssembly
+        private RelayCommand cmdOpenAssembly;
+        public RelayCommand CmdOpenAssembly
         {
             get
             {
-                return rcOpenAssembly ??
-                    (rcOpenAssembly = new RelayCommand(obj =>
+                return cmdOpenAssembly ??
+                    (cmdOpenAssembly = new RelayCommand(obj =>
                     {
                         if (dsOpenFile.OpenFileDialog("Assembly files|*.iam"))
                         {
                             try
                             {
-                                pathFile = dsOpenFile.FilePath;
-                                assemblyAnalyzer = new AssemblyAnalyzer(pathFile, aprServer);
-                                assemblyAnalyzer.getAllParts();
+                                filePath = dsOpenFile.FilePath;
+                                assemblyAnalyzer.OpenAssembly(filePath);
+                                foreach(ApprenticeServerDocument part in assemblyAnalyzer.Parts)
+                                {
+
+                                }
                             }
                             catch(Exception ex)
                             {

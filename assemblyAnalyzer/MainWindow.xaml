@@ -24,7 +24,7 @@
               BorderBrush="Black">
             <Menu.Items>
                 <MenuItem Header="Файл">
-                    <MenuItem Header="Открыть сборку" Command="{Binding RcOpenAssembly}"/>
+                    <MenuItem Header="Открыть сборку" Command="{Binding CmdOpenAssembly}"/>
                     <MenuItem Header="Закрыть сборку" />
                     <Separator/>
                     <MenuItem Header="Выход"/>
@@ -38,7 +38,7 @@
                  Padding="0px,1px,0px,1px"
                  Background="#F0F0F0"
                  >
-            <Button Height="35px" Command="{Binding RcOpenAssembly}" Padding="1,0,8,0">
+            <Button Height="35px" Command="{Binding CmdOpenAssembly}" Padding="1,0,8,0">
                 <StackPanel Orientation="Horizontal">
                     <Image Source="/Resource/OpenFile.png" Width="20px"/>
                     <TextBlock Margin="3,0,0,0" VerticalAlignment="Center">Открыть сборку</TextBlock>
@@ -122,23 +122,21 @@
                                 <Button Height="30px" Padding="4,0,10,0" Margin="4,0,4,0">Сохранить в базу</Button>
                             </ToolBar>
                         </Border>
-                        <DataGrid Grid.Row="1" Grid.Column="0" Margin="0,2,2,0">
+                        <DataGrid Grid.Row="1" Grid.Column="0" Margin="0,2,2,0" CanUserResizeColumns="False" >
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Название детали" Width="160" MinWidth="160">
-                                    
+                                <DataGridTextColumn Header="Название детали" Width="*" MinWidth="160">
+
                                 </DataGridTextColumn>
 
-                                <DataGridCheckBoxColumn Header="Сохранено" Width="auto" MinWidth="70">
+                                <DataGridCheckBoxColumn Header="Сохранено" Width="auto" MinWidth="70" IsReadOnly="True">
 
                                 </DataGridCheckBoxColumn>
 
-                                <DataGridTextColumn Header="Описание" Width="*">
-
-                                </DataGridTextColumn>
+                               
                             </DataGrid.Columns>
                         </DataGrid>
                         <DataGrid Grid.Row="1" Grid.Column="1" Margin="0,2,0,0"
-                        HorizontalScrollBarVisibility="Auto"
+                        VerticalScrollBarVisibility="Auto"
                         >
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Свойство" Width="*" MinWidth="110">
@@ -158,11 +156,12 @@
                         <RowDefinition Height="*"></RowDefinition>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="5*"/>
                         <ColumnDefinition Width="330px"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <!--<Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">-->
-                    <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" BorderBrush="Gray" BorderThickness="1">
+                    <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" BorderBrush="Gray" BorderThickness="1">
                         <ToolBar  
                              Height="32px"
                              Padding="1px,1px,1px,1px"
@@ -175,13 +174,13 @@
                             <Button Height="30px" Padding="4,0,10,0" Margin="4,0,4,0">Удалить из базы</Button>
                         </ToolBar>
                     </Border>
-                    <DataGrid Grid.Row="1" Grid.Column="0" Margin="0,2,2,0">
+                    <DataGrid Grid.Row="1" Grid.Column="0" Margin="0,2,2,0" Grid.ColumnSpan="2">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Название детали" Width="160" MinWidth="160">
 
                             </DataGridTextColumn>
 
-                            <DataGridCheckBoxColumn Header="Сохранено" Width="auto" MinWidth="70">
+                            <DataGridCheckBoxColumn Header="Дата сохранения" Width="auto" MinWidth="70">
 
                             </DataGridCheckBoxColumn>
 
@@ -190,7 +189,7 @@
                             </DataGridTextColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <DataGrid Grid.Row="1" Grid.Column="1" Margin="0,2,0,0"
+                    <DataGrid Grid.Row="1" Grid.Column="2" Margin="0,2,0,0"
                         HorizontalScrollBarVisibility="Auto"
                         >
                         <DataGrid.Columns>

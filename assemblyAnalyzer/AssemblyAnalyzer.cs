@@ -10,31 +10,61 @@ namespace assemblyAnalyze
 {
     class AssemblyAnalyzer
     {
-        public AssemblyAnalyzer(string pathToFile, ApprenticeServerComponent aprServer)
+        public AssemblyAnalyzer()
         {
-            this.pathToFile = pathToFile;
-            OpenAssembly(aprServer);
+            startupApprenticeServer();
         }
 
-        private ApprenticeServerDocument assembly;
-        private string pathToFile;
-        public string PathToFile
+        private ApprenticeServerComponent aprServer; //экзепляр Apprentice Server
+        private ApprenticeServerDocument assembly; //сборка, с которой работает  AS
+        public ApprenticeServerDocument ActiveAssembly
         {
             get
             {
-                return pathToFile;
+                return assembly;
             }
         }
-       
-        List <string> componentsName = new List<string>();
-        public List <ApprenticeServerDocument> parts = new List<ApprenticeServerDocument>();
-        public List<Dictionary<string, string>> partProperties = new List<Dictionary<string, string>>();
-        
-        private void OpenAssembly(ApprenticeServerComponent app)
+
+        //private List<string> partsName = new List<string>();
+        //public List<string> PartsName
+        //{
+        //    get
+        //    {
+        //        return partsName;
+        //    }
+        //}
+
+        private List<ApprenticeServerDocument> parts = new List<ApprenticeServerDocument>();
+        public IReadOnlyList<ApprenticeServerDocument>  Parts
         {
+            get
+            {
+                return parts.AsReadOnly();
+            }
+        }
+
+        //private List<Dictionary<string, string>> partProperties = new List<Dictionary<string, string>>();
+        //public Dictionary<string, string> PartProperties(ApprenticeServerDocument part)
+        //{
+        //    int index = parts.FindIndex(x => x == part);
+        //    return partProperties[index];
+        //}
+
+        private void startupApprenticeServer()
+        {
+            aprServer = new ApprenticeServerComponent();
+            if (aprServer == null)
+            {
+                new Exception("Ошибка при подключении к Inventor ApprenticeServer");
+            }
+        }
+
+        public void OpenAssembly(string pathToFile)
+        {
+            parts.Clear();
             try
             {
-                assembly = app.Open(PathToFile);
+                assembly = aprServer.Open(pathToFile);
                 if(assembly.DocumentType != DocumentTypeEnum.kAssemblyDocumentObject)
                     throw new Exception("Данный файл не является файлом сборки Inventor.");
             }
@@ -42,23 +72,23 @@ namespace assemblyAnalyze
             {
                 throw new Exception("Ошибка при попытке открытия файла, возможно файл имеет правильную структуру или создан в более поздней версии.");
             }
+            getParts();
         }
 
-        public void getAllParts()
+
+        private void getParts()
         {
-            getAllDefinitionParts(assembly);
-            getAllPartProperties();
-            int a = 0;
+            getAllDefinitionParts();
         }
 
-        private void getAllDefinitionParts(ApprenticeServerDocument assemblyDoc)
+        private void getAllDefinitionParts()
         {
-            foreach (ApprenticeServerDocument curDoc in assemblyDoc.AllReferencedDocuments)
+            foreach (ApprenticeServerDocument curDoc in assembly.AllReferencedDocuments)
             {
                 string val = curDoc.DisplayName;
                 if (curDoc.DocumentType == DocumentTypeEnum.kAssemblyDocumentObject)
                 {
-                    getAllDefinitionParts(curDoc);
+                    getAllDefinitionParts();
                 }
                 else if (curDoc.DocumentType == DocumentTypeEnum.kPartDocumentObject
                          && curDoc.Type != ObjectTypeEnum.kVirtualComponentDefinitionObject)
@@ -72,7 +102,7 @@ namespace assemblyAnalyze
                     if (copyDoc == null)// если нет такого документа, тогда добавляем
                     {
                         parts.Add(curDoc);
-                        componentsName.Add(curDoc.DisplayName);
+                        //partsName.Add(curDoc.DisplayName);
                     }
                 }
             }
@@ -89,44 +119,42 @@ namespace assemblyAnalyze
                     if (tempDoc != null)
                     {
                         parts.RemoveAt(i);
-                        componentsName.RemoveAt(i);
+                        //partsName.RemoveAt(i);
                     }
                 }
             }
         }
 
-        public void getAllPartProperties()
+        public static Dictionary<string,string> getPartProperties(ApprenticeServerDocument part)
         {
-            IPictureDisp pict = parts[0].Thumbnail as IPictureDisp;
+            IPictureDisp pict = part.Thumbnail as IPictureDisp;
+            Dictionary<string, string> dict = new Dictionary<string, string>();
             int[] designPropsIds = getDesignTrackingProperties();
             Property tempProp;
-            for (int i =0; i < parts.Count; i++)
+            foreach (int propId in Enum.GetValues(typeof(PropertiesForDocSummaryInformationEnum)))
             {
-                partProperties.Add(new Dictionary<string, string>());
-                foreach (int propId in Enum.GetValues(typeof(PropertiesForDocSummaryInformationEnum)))
+                try
                 {
-                    try
-                    {
-                        tempProp = parts[i].PropertySets["Inventor Document Summary Information"].ItemByPropId[propId];
-                        if (tempProp.Value != null && tempProp.Value.ToString() != "")
-                            partProperties[i].Add(tempProp.DisplayName, tempProp.Value.ToString());
-                    }
-                    catch {}
+                    tempProp = part.PropertySets["Inventor Document Summary Information"].ItemByPropId[propId];
+                    if (tempProp.Value != null && tempProp.Value.ToString() != "")
+                        dict.Add(tempProp.DisplayName, tempProp.Value.ToString());
                 }
-                for (int propId =0; propId < designPropsIds.Length; propId++)
-                {
-                    try
-                    {
-                        tempProp = parts[i].PropertySets["Design Tracking Properties"].ItemByPropId[designPropsIds[propId]];
-                        if (tempProp.Value != null && tempProp.Value.ToString() != "")
-                            partProperties[i].Add(tempProp.DisplayName, tempProp.Value.ToString());
-                    }
-                    catch {}
-                }
+                catch { }
             }
+            for (int propId = 0; propId < designPropsIds.Length; propId++)
+            {
+                try
+                {
+                    tempProp = part.PropertySets["Design Tracking Properties"].ItemByPropId[designPropsIds[propId]];
+                    if (tempProp.Value != null && tempProp.Value.ToString() != "")
+                        dict.Add(tempProp.DisplayName, tempProp.Value.ToString());
+                }
+                catch { }
+            }
+            return dict;
         }
 
-        private  int [] getDesignTrackingProperties()
+        private static int [] getDesignTrackingProperties()
         {
             int[] propIds = {
                 4,5,20,29,32,37,36,48,58,59,60,61,67,72 // основные нужные свойства

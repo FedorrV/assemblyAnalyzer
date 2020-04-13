@@ -24,8 +24,8 @@ namespace assemblyAnalyze
         public MainWindow()
         {
             InitializeComponent();
-            //ApplicationViewModel applicationViewModel = new ApplicationViewModel();
-            //this.DataContext = applicationViewModel;
+            AnalyzerViewModel applicationViewModel = new AnalyzerViewModel();
+            this.DataContext = applicationViewModel;
         }
 
     }

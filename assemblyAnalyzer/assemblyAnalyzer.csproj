@@ -114,7 +114,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="models\ApplicationContext.cs" />
+    <Compile Include="models\AnalyzerContext.cs" />
     <Compile Include="models\Dct_partfeature.cs" />
     <Compile Include="models\Mtm_part_partfeature.cs" />
     <Compile Include="models\Part.cs" />
@@ -128,7 +128,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ApplicationViewModel.cs" />
+    <Compile Include="AnalyzerViewModel.cs" />
     <Compile Include="AssemblyAnalyzer.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
