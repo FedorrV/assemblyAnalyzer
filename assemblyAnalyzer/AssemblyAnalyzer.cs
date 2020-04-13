@@ -78,17 +78,17 @@ namespace assemblyAnalyze
 
         private void getParts()
         {
-            getAllDefinitionParts();
+            getAllDefinitionParts(assembly);
         }
 
-        private void getAllDefinitionParts()
+        private void getAllDefinitionParts(ApprenticeServerDocument assemblyDoc)
         {
-            foreach (ApprenticeServerDocument curDoc in assembly.AllReferencedDocuments)
+            foreach (ApprenticeServerDocument curDoc in assemblyDoc.AllReferencedDocuments)
             {
                 string val = curDoc.DisplayName;
                 if (curDoc.DocumentType == DocumentTypeEnum.kAssemblyDocumentObject)
                 {
-                    getAllDefinitionParts();
+                    getAllDefinitionParts(curDoc);
                 }
                 else if (curDoc.DocumentType == DocumentTypeEnum.kPartDocumentObject
                          && curDoc.Type != ObjectTypeEnum.kVirtualComponentDefinitionObject)

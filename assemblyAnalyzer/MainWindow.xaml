@@ -6,12 +6,50 @@
         xmlns:local="clr-namespace:assemblyAnalyze"
         
         mc:Ignorable="d"
-        Title="assemblyAnalyzer" Height="520" Width="750"
+        Title="AssemblyAnalyzer" Height="520" Width="750"
         MinHeight="430" MinWidth="700"
         FontSize="12px">
     <Window.Resources>
-
+        <Style TargetType="TextBlock" x:Key="DGTextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Padding" Value="4,0,0,0"/>
+            <Setter Property="TextWrapping" Value="WrapWithOverflow"/>
+        </Style>
+        <Style TargetType="CheckBox" x:Key="DGCkeckBox">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="IsEnabled" Value="False"/>
+        </Style>
+        <Style TargetType="{x:Type DataGridCell}" x:Key="DGCell">
+            <Style.Triggers>
+                <Trigger Property="DataGridCell.IsSelected" Value="True">
+                    <Setter Property="Background" Value="#CCE8FF" />
+                    <Setter Property="BorderBrush" Value="#CCE8FF"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="DataGrid" x:Key="DG">
+            <Setter Property="CanUserResizeColumns" Value="False"/>
+            <Setter Property="CanUserSortColumns" Value="True"/>
+            <Setter Property="AutoGenerateColumns" Value="False"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="RowBackground" Value="#FBFBFF"/>
+            <Setter Property="AlternatingRowBackground" Value="White"/>
+            <Setter Property="SelectionMode" Value="Single"/>
+            <Setter Property="RowHeight" Value="30"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="Gray"/>
+            <Setter Property="SelectionUnit" Value="FullRow"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="CellStyle" Value="{StaticResource DGCell}"/>
+            <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="IsReadOnly" Value="True"/>
+        </Style>
     </Window.Resources>
+    
     <Grid Margin="0"
         Background="#F0F0F0">
         <Grid.RowDefinitions>
@@ -29,15 +67,12 @@
                     <Separator/>
                     <MenuItem Header="Выход"/>
                 </MenuItem>
-                <MenuItem Header="Помощь" DataContext="{Binding Help}">
-                    <MenuItem Header="О программе" Command="{Binding HelpCommand}"/>
+                <MenuItem Header="Помощь" >
+                    <MenuItem Header="О программе"/>
                 </MenuItem>
             </Menu.Items>
         </Menu>
-        <ToolBar Grid.Row="1" Height="37px" 
-                 Padding="0px,1px,0px,1px"
-                 Background="#F0F0F0"
-                 >
+        <ToolBar Grid.Row="1" Height="37px" Padding="0px,1px,0px,1px" Background="#F0F0F0" >
             <Button Height="35px" Command="{Binding CmdOpenAssembly}" Padding="1,0,8,0">
                 <StackPanel Orientation="Horizontal">
                     <Image Source="/Resource/OpenFile.png" Width="20px"/>
@@ -52,7 +87,7 @@
                 </StackPanel>
             </Button>
         </ToolBar>
-        <TabControl Grid.Row="2" Margin="5px">
+        <TabControl Grid.Row="2" Margin="5,0,5,5">
             <TabItem Header="Анализ сборки">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -87,9 +122,7 @@
                                     </TreeViewItem>
                                 </TreeViewItem>
                             </TreeView>
-                            <Grid Grid.Row="1" Width="auto" 
-                                  MaxHeight="150px"
-                                  Margin="3,0,3,3">
+                            <Grid Grid.Row="1" Width="auto" MaxHeight="150px" Margin="3,0,3,3">
                                 <Border Margin="15px" MaxWidth="120px"
                                         BorderBrush="Gray" BorderThickness="1">
                                     <Image Source="/Resource/search.png" ></Image>
@@ -105,43 +138,44 @@
                             <RowDefinition Height="*"></RowDefinition>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"></ColumnDefinition>
-                            <ColumnDefinition Width="250px"></ColumnDefinition>
+                            <ColumnDefinition Width="5*"></ColumnDefinition>
+                            <ColumnDefinition Width="4*"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
-                        <!--<Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">-->
                         <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" BorderBrush="Gray" BorderThickness="1">
                             <ToolBar  
-                             Height="32px"
-                             Padding="1px,1px,1px,1px"
-                             Background="White"
-                             >
+                             Height="32px" Padding="1px,1px,1px,1px" Background="White" >
                                 <TextBox  BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Left" 
                                 Width="150" Height="25px" Margin="0,0,8,0"></TextBox>
-                                <Button Height="30px" Padding="4,0,10,0" Margin="0,0,4,0">Поиск</Button>
+                                <Button Height="32px" Padding="4,0,10,0" Margin="0,0,4,0">Поиск</Button>
                                 <Separator/>
-                                <Button Height="30px" Padding="4,0,10,0" Margin="4,0,4,0">Сохранить в базу</Button>
+                                <Button Height="32px" Padding="4,0,10,0" Margin="4,0,4,0" 
+                                 Command="{Binding CmdSavePart}" CommandParameter="{Binding SelectedDGPart}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="/Resource/addToDB.png" Width="20px" />
+                                        <TextBlock Margin="3,0,0,0" VerticalAlignment="Center">Сохранить в БД</TextBlock>
+                                    </StackPanel>
+                                </Button>
                             </ToolBar>
                         </Border>
-                        <DataGrid Grid.Row="1" Grid.Column="0" Margin="0,2,2,0" CanUserResizeColumns="False" >
+                        <DataGrid Grid.Row="1" Grid.Column="0" Margin="0,2,2,0"  
+                        ItemsSource="{Binding DGParts}" SelectedItem="{Binding SelectedDGPart}" 
+                        Style="{StaticResource DG}">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Название детали" Width="*" MinWidth="160">
-
+                                <DataGridTextColumn Header="Название детали" Width="*" MinWidth="180"
+                                 Binding="{Binding Name}" ElementStyle="{StaticResource DGTextBlock}">
                                 </DataGridTextColumn>
 
-                                <DataGridCheckBoxColumn Header="Сохранено" Width="auto" MinWidth="70" IsReadOnly="True">
-
+                                <DataGridCheckBoxColumn Header="Сохранено в БД" Width="auto"
+                                MinWidth="100"  ElementStyle="{StaticResource DGCkeckBox}" Binding="{Binding IsSaved}" >
                                 </DataGridCheckBoxColumn>
-
-                               
                             </DataGrid.Columns>
                         </DataGrid>
-                        <DataGrid Grid.Row="1" Grid.Column="1" Margin="0,2,0,0"
-                        VerticalScrollBarVisibility="Auto"
-                        >
+                        <DataGrid Grid.Row="1" Grid.Column="1" Margin="0,2,0,0" 
+                        Style="{StaticResource DG}" >
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Свойство" Width="*" MinWidth="110">
+                                <DataGridTextColumn Header="Свойство" Width="*" MinWidth="110" ElementStyle="{StaticResource DGTextBlock}">
                                 </DataGridTextColumn>
-                                <DataGridTextColumn Header="Значение" Width="*" MinWidth="110">
+                                <DataGridTextColumn Header="Значение" Width="*" MinWidth="110" ElementStyle="{StaticResource DGTextBlock}">
                                 </DataGridTextColumn>
                             </DataGrid.Columns>
                         </DataGrid>
@@ -162,40 +196,33 @@
                     </Grid.ColumnDefinitions>
                     <!--<Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">-->
                     <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" BorderBrush="Gray" BorderThickness="1">
-                        <ToolBar  
-                             Height="32px"
-                             Padding="1px,1px,1px,1px"
-                             Background="White"
-                             >
+                        <ToolBar Height="32px" Padding="1px,1px,1px,1px" Background="White" >
                             <TextBox  BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Left" 
-                                Width="150" Height="25px" Margin="0,0,8,0"></TextBox>
+                            Width="150" Height="25px" Margin="0,0,8,0"></TextBox>
                             <Button Height="30px" Padding="4,0,10,0" Margin="0,0,4,0">Поиск</Button>
                             <Separator/>
                             <Button Height="30px" Padding="4,0,10,0" Margin="4,0,4,0">Удалить из базы</Button>
                         </ToolBar>
                     </Border>
-                    <DataGrid Grid.Row="1" Grid.Column="0" Margin="0,2,2,0" Grid.ColumnSpan="2">
+                    <DataGrid Grid.Row="1" Grid.Column="0" Margin="0,2,2,0" Grid.ColumnSpan="2"
+                     Style="{StaticResource DG}">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Название детали" Width="160" MinWidth="160">
-
+                            <DataGridTextColumn Header="Название детали" Width="160" MinWidth="160" ElementStyle="{StaticResource DGTextBlock}">
                             </DataGridTextColumn>
 
-                            <DataGridCheckBoxColumn Header="Дата сохранения" Width="auto" MinWidth="70">
-
+                            <DataGridCheckBoxColumn Header="Дата сохранения" Width="auto" MinWidth="70" ElementStyle="{StaticResource DGCkeckBox}">
                             </DataGridCheckBoxColumn>
 
-                            <DataGridTextColumn Header="Описание" Width="*">
-
+                            <DataGridTextColumn Header="Описание" Width="*" ElementStyle="{StaticResource DGTextBlock}">
                             </DataGridTextColumn>
                         </DataGrid.Columns>
                     </DataGrid>
                     <DataGrid Grid.Row="1" Grid.Column="2" Margin="0,2,0,0"
-                        HorizontalScrollBarVisibility="Auto"
-                        >
+                    Style="{StaticResource DG}">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Свойство" Width="*" MinWidth="110">
+                            <DataGridTextColumn Header="Свойство" Width="*" MinWidth="110" ElementStyle="{StaticResource DGTextBlock}">
                             </DataGridTextColumn>
-                            <DataGridTextColumn Header="Значение" Width="*" MinWidth="110">
+                            <DataGridTextColumn Header="Значение" Width="*" MinWidth="110" ElementStyle="{StaticResource DGTextBlock}">
                             </DataGridTextColumn>
                         </DataGrid.Columns>
                     </DataGrid>

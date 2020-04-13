@@ -24,9 +24,13 @@ namespace assemblyAnalyze
         public MainWindow()
         {
             InitializeComponent();
-            AnalyzerViewModel applicationViewModel = new AnalyzerViewModel();
-            this.DataContext = applicationViewModel;
+            AnalyzerViewModel analyzerViewModel = new AnalyzerViewModel();
+            this.DataContext = analyzerViewModel;
         }
 
+        private void DataGrid_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
+        {
+
+        }
     }
 }
