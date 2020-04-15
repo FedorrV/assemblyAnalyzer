@@ -13,7 +13,6 @@
         <Style TargetType="TextBlock" x:Key="DGTextBlock">
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="Padding" Value="4,0,0,0"/>
-            <Setter Property="TextWrapping" Value="WrapWithOverflow"/>
         </Style>
         <Style TargetType="CheckBox" x:Key="DGCkeckBox">
             <Setter Property="VerticalAlignment" Value="Center" />
@@ -47,6 +46,13 @@
             <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="IsReadOnly" Value="True"/>
+        </Style>
+        <Style TargetType="Image" x:Key="BTNImage">
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.5" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
     </Window.Resources>
     
@@ -82,7 +88,7 @@
             <Separator/>
             <Button Height="35px" Padding="1,0,8,0">
                 <StackPanel Orientation="Horizontal">
-                    <Image Source="/Resource/search.png" Width="20px"/>
+                    <Image Source="/Resource/search.png" Width="20px" Style="{StaticResource BTNImage}"/>
                     <TextBlock Margin="3,0,0,0" VerticalAlignment="Center">Идентифицировать деталь</TextBlock>
                 </StackPanel>
             </Button>
@@ -151,31 +157,33 @@
                                 <Button Height="32px" Padding="4,0,10,0" Margin="4,0,4,0" 
                                  Command="{Binding CmdSavePart}" CommandParameter="{Binding SelectedDGPart}">
                                     <StackPanel Orientation="Horizontal">
-                                        <Image Source="/Resource/addToDB.png" Width="20px" />
+                                        <Image Source="/Resource/addToDB.png" Width="20px" Style="{StaticResource BTNImage}"/>
                                         <TextBlock Margin="3,0,0,0" VerticalAlignment="Center">Сохранить в БД</TextBlock>
                                     </StackPanel>
                                 </Button>
                             </ToolBar>
                         </Border>
-                        <DataGrid Grid.Row="1" Grid.Column="0" Margin="0,2,2,0"  
-                        ItemsSource="{Binding DGParts}" SelectedItem="{Binding SelectedDGPart}" 
-                        Style="{StaticResource DG}">
+                        <DataGrid Grid.Row="1" Grid.Column="0" Margin="0,2,2,0"  Style="{StaticResource DG}"
+                        ItemsSource="{Binding DGParts}" SelectedItem="{Binding SelectedDGPart}"
+                        CanUserResizeColumns="True">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Название детали" Width="*" MinWidth="180"
+                                <DataGridTextColumn Header="Название детали"  MinWidth="180" Width="Auto"
                                  Binding="{Binding Name}" ElementStyle="{StaticResource DGTextBlock}">
                                 </DataGridTextColumn>
-
-                                <DataGridCheckBoxColumn Header="Сохранено в БД" Width="auto"
+                                
+                                <DataGridCheckBoxColumn Header="Сохранено в БД" Width="*"
                                 MinWidth="100"  ElementStyle="{StaticResource DGCkeckBox}" Binding="{Binding IsSaved}" >
                                 </DataGridCheckBoxColumn>
                             </DataGrid.Columns>
                         </DataGrid>
-                        <DataGrid Grid.Row="1" Grid.Column="1" Margin="0,2,0,0" 
-                        Style="{StaticResource DG}" >
+                        <DataGrid Grid.Row="1" Grid.Column="1" Margin="0,2,0,0" ItemsSource="{Binding DGProperties}"
+                        Style="{StaticResource DG}"  >
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Свойство" Width="*" MinWidth="110" ElementStyle="{StaticResource DGTextBlock}">
+                                <DataGridTextColumn Header="Свойство" Width="*" MinWidth="110" 
+                                ElementStyle="{StaticResource DGTextBlock}" Binding="{Binding Key}">
                                 </DataGridTextColumn>
-                                <DataGridTextColumn Header="Значение" Width="*" MinWidth="110" ElementStyle="{StaticResource DGTextBlock}">
+                                <DataGridTextColumn Header="Значение"  Width="Auto" MinWidth="110" 
+                                ElementStyle="{StaticResource DGTextBlock}" Binding="{Binding Value}">
                                 </DataGridTextColumn>
                             </DataGrid.Columns>
                         </DataGrid>

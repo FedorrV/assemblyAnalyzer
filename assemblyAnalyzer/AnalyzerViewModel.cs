@@ -12,6 +12,7 @@ using System.Data.Entity;
 using assemblyAnalyzer;
 using System;
 using System.Collections.ObjectModel;
+using System.Windows.Controls;
 
 namespace assemblyAnalyze
 {
@@ -19,7 +20,7 @@ namespace assemblyAnalyze
     {
         public AnalyzerViewModel()
         {
-            DGParts = new ObservableCollection<DGPartItem>();
+            //DGParts = new ObservableCollection<DGPartItem>();
             try
             {
                 assemblyAnalyzer = new AssemblyAnalyzer();
@@ -42,7 +43,8 @@ namespace assemblyAnalyze
         private AnalyzerContext db;
         IEnumerable<Part> parts;
 
-        public ObservableCollection<DGPartItem> DGParts { get; set;}
+        public ObservableCollection<DGPartItem> DGParts { get; set;} = new ObservableCollection<DGPartItem>();
+
         public DGPartItem selectedDGPart;
         public DGPartItem SelectedDGPart
         {
@@ -51,8 +53,21 @@ namespace assemblyAnalyze
             {
                 selectedDGPart = value;
                 OnPropertyChanged("SelectedDGPart");
+                DGProperties = selectedDGPart.Properties;
             }
         }
+
+        public Dictionary<string, string> dGProperties = new Dictionary<string, string>();
+        public Dictionary<string, string> DGProperties
+        {
+            get { return dGProperties; }
+            set
+            {
+                dGProperties = value;
+                OnPropertyChanged("DGProperties");
+            }
+        }
+
         //public ObservableCollection<DGPartItem> DGParts
         //{
         //    get
@@ -91,7 +106,13 @@ namespace assemblyAnalyze
                                 {
                                     DGParts.Add(new DGPartItem(part, AssemblyAnalyzer.getPartProperties(part), true));
                                 }
+                                DGPartItem tt = new DGPartItem();
+                                tt.Name = "asdfasdsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssdfsd";
+                                tt.IsSaved = true;
+                                DGParts.Add(tt);
+                                DGProperties = AssemblyAnalyzer.getPartProperties(assemblyAnalyzer.Parts[0]);
                                 OnPropertyChanged("DGParts");
+                                OnPropertyChanged("DGProperties");
                             }
                             catch(Exception ex)
                             {
