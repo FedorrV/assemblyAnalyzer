@@ -151,8 +151,30 @@
                             <ToolBar  
                              Height="32px" Padding="1px,1px,1px,1px" Background="White" >
                                 <TextBox  BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Left" 
-                                Width="150" Height="25px" Margin="0,0,8,0"></TextBox>
-                                <Button Height="32px" Padding="4,0,10,0" Margin="0,0,4,0">Поиск</Button>
+                                Width="150" Height="25px" Margin="0,0,8,0" Text="{Binding Path=AA_SearchText, UpdateSourceTrigger=PropertyChanged}" >
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+                                            <Style.Resources>
+                                                <VisualBrush x:Key="CueBannerBrush" AlignmentX="Left" AlignmentY="Center" Stretch="None">
+                                                    <VisualBrush.Visual>
+                                                        <Label Content="Поиск детали" Foreground="LightGray" />
+                                                    </VisualBrush.Visual>
+                                                </VisualBrush>
+                                            </Style.Resources>
+                                            <Style.Triggers>
+                                                <Trigger Property="Text" Value="{x:Static sys:String.Empty}">
+                                                    <Setter Property="Background" Value="{StaticResource CueBannerBrush}" />
+                                                </Trigger>
+                                                <Trigger Property="Text" Value="{x:Null}">
+                                                    <Setter Property="Background" Value="{StaticResource CueBannerBrush}" />
+                                                </Trigger>
+                                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                                    <Setter Property="Background" Value="White" />
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
                                 <Separator/>
                                 <Button Height="32px" Padding="4,0,10,0" Margin="4,0,4,0" 
                                  Command="{Binding CmdSavePart}" CommandParameter="{Binding SelectedDGPart}">
@@ -164,14 +186,13 @@
                             </ToolBar>
                         </Border>
                         <DataGrid Grid.Row="1" Grid.Column="0" Margin="0,2,2,0"  Style="{StaticResource DG}"
-                        ItemsSource="{Binding DGParts}" SelectedItem="{Binding SelectedDGPart}"
-                        CanUserResizeColumns="True">
+                        ItemsSource="{Binding FilteredDGParts}" SelectedItem="{Binding SelectedDGPart}" Width="Auto">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Название детали"  MinWidth="180" Width="Auto"
+                                <DataGridTextColumn Header="Название детали"  MinWidth="198" Width="Auto" 
                                  Binding="{Binding Name}" ElementStyle="{StaticResource DGTextBlock}">
                                 </DataGridTextColumn>
                                 
-                                <DataGridCheckBoxColumn Header="Сохранено в БД" Width="*"
+                                <DataGridCheckBoxColumn Header="Сохранено в БД" Width="auto"
                                 MinWidth="100"  ElementStyle="{StaticResource DGCkeckBox}" Binding="{Binding IsSaved}" >
                                 </DataGridCheckBoxColumn>
                             </DataGrid.Columns>

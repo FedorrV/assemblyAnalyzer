@@ -43,9 +43,23 @@ namespace assemblyAnalyze
         private AnalyzerContext db;
         IEnumerable<Part> parts;
 
-        public ObservableCollection<DGPartItem> DGParts { get; set;} = new ObservableCollection<DGPartItem>();
+        private ObservableCollection<DGPartItem> DGParts { get; set; } = new ObservableCollection<DGPartItem>();
 
-        public DGPartItem selectedDGPart;
+        private ObservableCollection<DGPartItem> filteredDGParts = new ObservableCollection<DGPartItem>();
+        public ObservableCollection<DGPartItem> FilteredDGParts
+        {
+            get
+            {
+                return filteredDGParts;
+            }
+            set
+            {
+                filteredDGParts = value;
+                OnPropertyChanged("FilteredDGParts");
+            }
+        }
+
+        private DGPartItem selectedDGPart;
         public DGPartItem SelectedDGPart
         {
             get { return selectedDGPart; }
@@ -53,11 +67,14 @@ namespace assemblyAnalyze
             {
                 selectedDGPart = value;
                 OnPropertyChanged("SelectedDGPart");
-                DGProperties = selectedDGPart.Properties;
+                if (selectedDGPart == null)
+                    DGProperties = null;
+                else
+                    DGProperties = selectedDGPart.Properties;
             }
         }
 
-        public Dictionary<string, string> dGProperties = new Dictionary<string, string>();
+        private Dictionary<string, string> dGProperties = new Dictionary<string, string>();
         public Dictionary<string, string> DGProperties
         {
             get { return dGProperties; }
@@ -68,18 +85,25 @@ namespace assemblyAnalyze
             }
         }
 
-        //public ObservableCollection<DGPartItem> DGParts
-        //{
-        //    get
-        //    {
-        //        return DGParts;
-        //    }
-        //    set
-        //    {
-        //        DGParts = value
-        //    }
-        //}
-
+        private string aA_SearchText;
+        public string AA_SearchText
+        {
+            get
+            {
+                return aA_SearchText;
+            }
+            set
+            {
+                aA_SearchText = value;
+                OnPropertyChanged("AA_SearchText");
+                if (aA_SearchText == "")
+                    FilteredDGParts = DGParts;
+                else
+                    FilteredDGParts = new ObservableCollection<DGPartItem>(DGParts.Where(x => x.Name.ToLower().Contains(aA_SearchText.ToLower())));
+                //if (FilteredDGParts.Count != DGParts.Count)
+                    //DGProperties = null;
+            }
+        }
 
         ~AnalyzerViewModel()
         {
@@ -106,19 +130,20 @@ namespace assemblyAnalyze
                                 {
                                     DGParts.Add(new DGPartItem(part, AssemblyAnalyzer.getPartProperties(part), true));
                                 }
-                                DGPartItem tt = new DGPartItem();
-                                tt.Name = "asdfasdsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssdfsd";
-                                tt.IsSaved = true;
+                                DGPartItem tt = new DGPartItem() ;
+                                tt.Name = "dddddddddddddddddddddddddddddddddddddddd";
+                                tt.IsSaved = false;
                                 DGParts.Add(tt);
-                                DGProperties = AssemblyAnalyzer.getPartProperties(assemblyAnalyzer.Parts[0]);
-                                OnPropertyChanged("DGParts");
-                                OnPropertyChanged("DGProperties");
+                                FilteredDGParts = DGParts;
+
+                                if(aA_SearchText!="" && aA_SearchText!=null)
+                                    FilteredDGParts = new ObservableCollection<DGPartItem>(DGParts.Where(x => x.Name.ToLower().Contains(aA_SearchText.ToLower())));
+                                DGProperties = null;
                             }
                             catch(Exception ex)
                             {
                                 DialogService.ShowMessage(ex.Message);
                             }
-                            
                         }
                     })
                     );
@@ -134,11 +159,15 @@ namespace assemblyAnalyze
                 return cmdSavePart ??
                     (cmdSavePart = new RelayCommand(obj =>
                     {
-                        
-                                DGPartItem temp = SelectedDGPart;
+
+                        DGPartItem temp = SelectedDGPart;
                         int a = 0;
-                    }, obj => obj != null)
-                    );
+                    }, (obj) =>
+                    {
+                        DGPartItem temp = obj as DGPartItem;
+                        return temp != null && temp.IsSaved == false;
+                    }
+                    ));
             }
         }
 
