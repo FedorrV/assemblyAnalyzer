@@ -3,16 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
 using InventorApprentice;
 using assemblyAnalyzer.models;
 using System.Data.Entity;
 using assemblyAnalyzer;
 using System;
 using System.Collections.ObjectModel;
-using System.Windows.Controls;
 
 namespace assemblyAnalyze
 {
@@ -104,6 +100,20 @@ namespace assemblyAnalyze
                     //DGProperties = null;
             }
         }
+        
+        private stdole.IPictureDisp curPartImage;
+        public stdole.IPictureDisp CurPartImage 
+        {
+            get
+            {
+                return curPartImage;
+            }
+            set
+            {
+                curPartImage = value;
+                OnPropertyChanged("CurPartImage");
+            }
+        }
 
         ~AnalyzerViewModel()
         {
@@ -128,9 +138,10 @@ namespace assemblyAnalyze
                                 DGParts.Clear();
                                 foreach(ApprenticeServerDocument part in assemblyAnalyzer.Parts)
                                 {
-                                    DGParts.Add(new DGPartItem(part, AssemblyAnalyzer.getPartProperties(part), true));
+                                    DGParts.Add(new DGPartItem(part, AssemblyAnalyzer.getPartProperties(part), false));
                                 }
                                 DGPartItem tt = new DGPartItem() ;
+                                CurPartImage = DGParts[0].PartDoc.Thumbnail;
                                 tt.Name = "dddddddddddddddddddddddddddddddddddddddd";
                                 tt.IsSaved = false;
                                 DGParts.Add(tt);

@@ -54,6 +54,26 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+        <Style TargetType="TextBox" xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="searchTextBox">
+            <Style.Resources>
+                <VisualBrush x:Key="CueBannerBrush" AlignmentX="Left" AlignmentY="Center" Stretch="None">
+                    <VisualBrush.Visual>
+                        <Label Content="Поиск детали" Foreground="LightGray" />
+                    </VisualBrush.Visual>
+                </VisualBrush>
+            </Style.Resources>
+            <Style.Triggers>
+                <Trigger Property="Text" Value="{x:Static sys:String.Empty}">
+                    <Setter Property="Background" Value="{StaticResource CueBannerBrush}" />
+                </Trigger>
+                <Trigger Property="Text" Value="{x:Null}">
+                    <Setter Property="Background" Value="{StaticResource CueBannerBrush}" />
+                </Trigger>
+                <Trigger Property="IsKeyboardFocused" Value="True">
+                    <Setter Property="Background" Value="White" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
     
     <Grid Margin="0"
@@ -131,7 +151,7 @@
                             <Grid Grid.Row="1" Width="auto" MaxHeight="150px" Margin="3,0,3,3">
                                 <Border Margin="15px" MaxWidth="120px"
                                         BorderBrush="Gray" BorderThickness="1">
-                                    <Image Source="/Resource/search.png" ></Image>
+                                    <Image Source="{Binding CurPartImage}"></Image>
                                 </Border>
                             </Grid>
                         </Grid>
@@ -150,30 +170,9 @@
                         <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" BorderBrush="Gray" BorderThickness="1">
                             <ToolBar  
                              Height="32px" Padding="1px,1px,1px,1px" Background="White" >
-                                <TextBox  BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Left" 
+                                <TextBox  BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Left" Style="{StaticResource searchTextBox}"
                                 Width="150" Height="25px" Margin="0,0,8,0" Text="{Binding Path=AA_SearchText, UpdateSourceTrigger=PropertyChanged}" >
-                                    <TextBox.Style>
-                                        <Style TargetType="TextBox" xmlns:sys="clr-namespace:System;assembly=mscorlib">
-                                            <Style.Resources>
-                                                <VisualBrush x:Key="CueBannerBrush" AlignmentX="Left" AlignmentY="Center" Stretch="None">
-                                                    <VisualBrush.Visual>
-                                                        <Label Content="Поиск детали" Foreground="LightGray" />
-                                                    </VisualBrush.Visual>
-                                                </VisualBrush>
-                                            </Style.Resources>
-                                            <Style.Triggers>
-                                                <Trigger Property="Text" Value="{x:Static sys:String.Empty}">
-                                                    <Setter Property="Background" Value="{StaticResource CueBannerBrush}" />
-                                                </Trigger>
-                                                <Trigger Property="Text" Value="{x:Null}">
-                                                    <Setter Property="Background" Value="{StaticResource CueBannerBrush}" />
-                                                </Trigger>
-                                                <Trigger Property="IsKeyboardFocused" Value="True">
-                                                    <Setter Property="Background" Value="White" />
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBox.Style>
+                                    
                                 </TextBox>
                                 <Separator/>
                                 <Button Height="32px" Padding="4,0,10,0" Margin="4,0,4,0" 
@@ -227,7 +226,7 @@
                     <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" BorderBrush="Gray" BorderThickness="1">
                         <ToolBar Height="32px" Padding="1px,1px,1px,1px" Background="White" >
                             <TextBox  BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Left" 
-                            Width="150" Height="25px" Margin="0,0,8,0"></TextBox>
+                            Width="150" Height="25px" Margin="0,0,8,0" Style="{StaticResource searchTextBox}"></TextBox>
                             <Button Height="30px" Padding="4,0,10,0" Margin="0,0,4,0">Поиск</Button>
                             <Separator/>
                             <Button Height="30px" Padding="4,0,10,0" Margin="4,0,4,0">Удалить из базы</Button>
