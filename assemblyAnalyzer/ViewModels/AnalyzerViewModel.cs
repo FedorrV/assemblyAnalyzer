@@ -68,11 +68,18 @@ namespace assemblyAnalyze
             {
                 selectedAssemblyPart = value;
                 OnPropertyChanged("SelectedAssemblyPart");
-                updatePartPhoto(selectedAssemblyPart.PartDoc.Thumbnail);
                 if (selectedAssemblyPart == null)
+                {
                     AssemblyPartProps = null;
+                    CurAssemblyPartImage = null;
+                }
                 else
+                {
+                    updatePartPhoto(selectedAssemblyPart.PartDocument.Thumbnail);
+                    if (selectedAssemblyPart.Properties == null)
+                        selectedAssemblyPart.Properties = AssemblyAnalyzer.getPartProperties(selectedAssemblyPart.PartDocument);
                     AssemblyPartProps = selectedAssemblyPart.Properties;
+                }
             }
         }
 
@@ -144,7 +151,7 @@ namespace assemblyAnalyze
                                 assemblyParts.Clear();
                                 foreach(ApprenticeServerDocument part in assemblyAnalyzer.Parts)
                                 {
-                                    assemblyParts.Add(new PartViewModel(part, AssemblyAnalyzer.getPartProperties(part), false));
+                                    assemblyParts.Add(new PartViewModel(part,  false));
                                 }
                                 
                                 FilteredAssemblyParts = assemblyParts;

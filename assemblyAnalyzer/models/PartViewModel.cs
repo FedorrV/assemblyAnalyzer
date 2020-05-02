@@ -12,17 +12,16 @@ namespace assemblyAnalyzer
     
     public class PartViewModel
     {
-        public PartViewModel()
-        {}
-        public PartViewModel(ApprenticeServerDocument partDoc, Dictionary<string, string> properties, bool isSaved= false )
+        public PartViewModel(){}
+        public PartViewModel(ApprenticeServerDocument partDoc, bool isSaved= false )
         {
-            this.PartDoc = partDoc;
+            this.PartDocument = partDoc;
             this.IsSaved = isSaved;
-            this.Properties = properties;
+            //this.Properties = properties;
             this.Name = partDoc.DisplayName;
         }
 
-        public ApprenticeServerDocument PartDoc;
+        public ApprenticeServerDocument PartDocument;
 
         private string name;
         public string Name
@@ -39,7 +38,6 @@ namespace assemblyAnalyzer
         }
 
         private bool isSaved;
-        private Dictionary<string, string> properties;
         public bool IsSaved
         {
             get
@@ -53,6 +51,7 @@ namespace assemblyAnalyzer
             }
         }
 
+        private Dictionary<string, string> properties;
         public Dictionary<string, string> Properties
         {
             get
