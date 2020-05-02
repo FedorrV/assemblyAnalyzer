@@ -1,4 +1,5 @@
-﻿using System;
+﻿using assemblyAnalyze.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -75,9 +76,16 @@ namespace assemblyAnalyze
 
         public async Task ShowModalPresentation(object vm)
         {
-            var window = CreateWindowInstanceWithVM(vm);
-            window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-            await window.Dispatcher.InvokeAsync(() => window.ShowDialog());
+            try
+            {
+                var window = CreateWindowInstanceWithVM(vm);
+                window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                await window.Dispatcher.InvokeAsync(() => window.ShowDialog());
+            }
+            catch(Exception ex)
+            {
+                FileDialogService.ShowMessage(ex.Message);
+            }
         }
     }
 }

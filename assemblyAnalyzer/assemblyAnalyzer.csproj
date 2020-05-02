@@ -116,7 +116,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DisplayRootRegistry.cs" />
-    <Compile Include="models\AnalyzerContext.cs" />
+    <Compile Include="models\DataContext.cs" />
     <Compile Include="models\Dct_partfeature.cs" />
     <Compile Include="models\Mtm_part_partfeature.cs" />
     <Compile Include="models\Part.cs" />
