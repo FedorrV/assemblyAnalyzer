@@ -44,83 +44,80 @@ namespace assemblyAnalyze
         private DataContext db;
         IEnumerable<Part> parts;
 
-        private ObservableCollection<PartViewModel> DGParts { get; set; } = new ObservableCollection<PartViewModel>();
+        private ObservableCollection<PartViewModel> assemblyParts { get; set; } = new ObservableCollection<PartViewModel>();
 
-        private ObservableCollection<PartViewModel> filteredDGParts = new ObservableCollection<PartViewModel>();
-        public ObservableCollection<PartViewModel> FilteredDGParts
+        private ObservableCollection<PartViewModel> filteredAssemblyParts = new ObservableCollection<PartViewModel>();
+        public ObservableCollection<PartViewModel> FilteredAssemblyParts
         {
             get
             {
-                return filteredDGParts;
+                return filteredAssemblyParts;
             }
             set
             {
-                filteredDGParts = value;
-                OnPropertyChanged("FilteredDGParts");
+                filteredAssemblyParts = value;
+                OnPropertyChanged("FilteredAssemblyParts");
             }
         }
 
-        private PartViewModel selectedDGPart;
-        public PartViewModel SelectedDGPart
+        private PartViewModel selectedAssemblyPart;
+        public PartViewModel SelectedAssemblyPart
         {
-            get { return selectedDGPart; }
+            get { return selectedAssemblyPart; }
             set
             {
-                selectedDGPart = value;
-                OnPropertyChanged("SelectedDGPart");
-                //CurPartImage.Freeze();
-                ToBitmapSource(selectedDGPart.PartDoc.Thumbnail);
-                //CurPartImage = d.Result;
-                //CurPartImage = await Emfutilities.ToBitmapSource(selectedDGPart.PartDoc.Thumbnail);
-                if (selectedDGPart == null)
-                    DGProperties = null;
+                selectedAssemblyPart = value;
+                OnPropertyChanged("SelectedAssemblyPart");
+                updatePartPhoto(selectedAssemblyPart.PartDoc.Thumbnail);
+                if (selectedAssemblyPart == null)
+                    AssemblyPartProps = null;
                 else
-                    DGProperties = selectedDGPart.Properties;
+                    AssemblyPartProps = selectedAssemblyPart.Properties;
             }
         }
 
-        private Dictionary<string, string> dGProperties = new Dictionary<string, string>();
-        public Dictionary<string, string> DGProperties
+        private Dictionary<string, string> assemblyPartProps = new Dictionary<string, string>();
+        public Dictionary<string, string> AssemblyPartProps
         {
-            get { return dGProperties; }
+            get { return assemblyPartProps; }
             set
             {
-                dGProperties = value;
-                OnPropertyChanged("DGProperties");
+                assemblyPartProps = value;
+                OnPropertyChanged("AssemblyPartProps");
             }
         }
 
-        private string aA_SearchText;
-        public string AA_SearchText
+        private string assemblyPartSearchText;
+        public string AssemblyPartSearchText
         {
             get
             {
-                return aA_SearchText;
+                return assemblyPartSearchText;
             }
             set
             {
-                aA_SearchText = value;
-                OnPropertyChanged("AA_SearchText");
-                if (aA_SearchText == "")
-                    FilteredDGParts = DGParts;
+                assemblyPartSearchText = value;
+                OnPropertyChanged("AssemblyPartSearchText");
+                if (assemblyPartSearchText == "")
+                    FilteredAssemblyParts = assemblyParts;
                 else
-                    FilteredDGParts = new ObservableCollection<PartViewModel>(DGParts.Where(x => x.Name.ToLower().Contains(aA_SearchText.ToLower())));
+                    FilteredAssemblyParts = new ObservableCollection<PartViewModel>(assemblyParts.Where(x => x.Name.ToLower().Contains(assemblyPartSearchText.ToLower())));
                 //if (FilteredDGParts.Count != DGParts.Count)
                     //DGProperties = null;
             }
         }
 
-        private BitmapSource curPartImage;
-        public BitmapSource CurPartImage 
+        private BitmapSource curAssemblyPartImage;
+        public BitmapSource CurAssemblyPartImage 
         {
             get
             {
-                return curPartImage;
+                return curAssemblyPartImage;
             }
             set
             {
-                curPartImage = value;
-                OnPropertyChanged("CurPartImage");
+                curAssemblyPartImage = value;
+                OnPropertyChanged("CurAssemblyPartImage");
             }
         }
 
@@ -141,24 +138,19 @@ namespace assemblyAnalyze
                         {
                             try
                             {
-                                PartViewModel temp = SelectedDGPart;
+                                PartViewModel temp = SelectedAssemblyPart;
                                 filePath = dsOpenFile.FilePath;
                                 assemblyAnalyzer.OpenAssembly(filePath);
-                                DGParts.Clear();
+                                assemblyParts.Clear();
                                 foreach(ApprenticeServerDocument part in assemblyAnalyzer.Parts)
                                 {
-                                    DGParts.Add(new PartViewModel(part, AssemblyAnalyzer.getPartProperties(part), false));
+                                    assemblyParts.Add(new PartViewModel(part, AssemblyAnalyzer.getPartProperties(part), false));
                                 }
-                                PartViewModel tt = new PartViewModel() ;
                                 
-                                tt.Name = "dddddddddddddddddddddddddddddddddddddddd";
-                                tt.IsSaved = false;
-                                DGParts.Add(tt);
-                                FilteredDGParts = DGParts;
-
-                                if(aA_SearchText!="" && aA_SearchText!=null)
-                                    FilteredDGParts = new ObservableCollection<PartViewModel>(DGParts.Where(x => x.Name.ToLower().Contains(aA_SearchText.ToLower())));
-                                DGProperties = null;
+                                FilteredAssemblyParts = assemblyParts;
+                                if(assemblyPartSearchText!="" && assemblyPartSearchText!=null)
+                                    FilteredAssemblyParts = new ObservableCollection<PartViewModel>(assemblyParts.Where(x => x.Name.ToLower().Contains(assemblyPartSearchText.ToLower())));
+                                AssemblyPartProps = null;
                             }
                             catch (Exception ex)
                             {
@@ -185,7 +177,7 @@ namespace assemblyAnalyze
                             SavePartViewModel savePartVM = obj as SavePartViewModel;
                             if (savePartVM != null)
                             {
-                                AA_SearchText = savePartVM.TextValue;
+                                AssemblyPartSearchText = savePartVM.TextValue;
                             }
                             else throw new Exception("SavePartViewModel is null");
                         }
@@ -202,7 +194,7 @@ namespace assemblyAnalyze
             }
         }
    
-        private  async void ToBitmapSource(stdole.IPictureDisp pictureDisp)
+        private async void updatePartPhoto(stdole.IPictureDisp pictureDisp)
         {
             BitmapSource bitmap = null;
             await Task.Run(()=>
@@ -222,12 +214,10 @@ namespace assemblyAnalyze
                         g.DrawImage(emf, 0, 0);
                         bitmap = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(bmp.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
                         bitmap.Freeze();
-                        CurPartImage = bitmap;
+                        CurAssemblyPartImage = bitmap;
                     }
                 }
             });
-           
-            
         }
     }
 }

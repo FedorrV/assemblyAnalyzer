@@ -151,7 +151,7 @@
                             <Grid Grid.Row="1" Width="auto" Height="auto" MaxHeight="170px" Margin="3,0,3,3">
                                 <Border Margin="15px" MaxWidth="120px"
                                         BorderBrush="Gray" BorderThickness="1">
-                                    <Image Source="{Binding CurPartImage}"></Image>
+                                    <Image Source="{Binding CurAssemblyPartImage}"></Image>
                                 </Border>
                             </Grid>
                         </Grid>
@@ -171,12 +171,12 @@
                             <ToolBar  
                              Height="32px" Padding="1px,1px,1px,1px" Background="White" >
                                 <TextBox  BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Left" Style="{StaticResource searchTextBox}"
-                                Width="150" Height="25px" Margin="0,0,8,0" Text="{Binding Path=AA_SearchText, UpdateSourceTrigger=PropertyChanged}" >
+                                Width="150" Height="25px" Margin="0,0,8,0" Text="{Binding Path=AssemblyPartSearchText, UpdateSourceTrigger=PropertyChanged}" >
                                     
                                 </TextBox>
                                 <Separator/>
                                 <Button Height="32px" Padding="4,0,10,0" Margin="4,0,4,0" 
-                                 Command="{Binding CmdSavePart}" CommandParameter="{Binding SelectedDGPart}">
+                                 Command="{Binding CmdSavePart}" CommandParameter="{Binding SelectedAssemblyPart}">
                                     <StackPanel Orientation="Horizontal">
                                         <Image Source="/Resource/addToDB.png" Width="20px" Style="{StaticResource BTNImage}"/>
                                         <TextBlock Margin="3,0,0,0" VerticalAlignment="Center">Сохранить в БД</TextBlock>
@@ -185,7 +185,7 @@
                             </ToolBar>
                         </Border>
                         <DataGrid Grid.Row="1" Grid.Column="0" Margin="0,2,2,0"  Style="{StaticResource DG}"
-                        ItemsSource="{Binding FilteredDGParts}" SelectedItem="{Binding SelectedDGPart}" Width="Auto">
+                        ItemsSource="{Binding FilteredAssemblyParts}" SelectedItem="{Binding SelectedAssemblyPart}" Width="Auto">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Название детали"  MinWidth="198" Width="Auto" 
                                  Binding="{Binding Name}" ElementStyle="{StaticResource DGTextBlock}">
@@ -196,7 +196,7 @@
                                 </DataGridCheckBoxColumn>
                             </DataGrid.Columns>
                         </DataGrid>
-                        <DataGrid Grid.Row="1" Grid.Column="1" Margin="0,2,0,0" ItemsSource="{Binding DGProperties}"
+                        <DataGrid Grid.Row="1" Grid.Column="1" Margin="0,2,0,0" ItemsSource="{Binding AssemblyPartProps}"
                         Style="{StaticResource DG}"  >
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Свойство" Width="auto" MinWidth="110" 
