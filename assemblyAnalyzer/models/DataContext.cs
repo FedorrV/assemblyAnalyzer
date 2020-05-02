@@ -8,9 +8,9 @@ using assemblyAnalyzer.models;
 
 namespace assemblyAnalyzer
 {
-    class AnalyzerContext: DbContext
+    class DataContext: DbContext
     {
-        public AnalyzerContext() : base("DefaultConnection")
+        public DataContext() : base("DefaultConnection")
         {
         }
 

@@ -17,11 +17,21 @@ namespace assemblyAnalyze
     /// <summary>
     /// Логика взаимодействия для PartDescription.xaml
     /// </summary>
-    public partial class PartDescription : Window
+    public partial class SavePart : Window
     {
-        public PartDescription()
+        public SavePart()
         {
             InitializeComponent();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            this.Close();
         }
     }
 }

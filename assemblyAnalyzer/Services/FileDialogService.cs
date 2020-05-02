@@ -8,7 +8,7 @@ using System.Windows;
 
 namespace assemblyAnalyze.Services
 {
-    class DialogService
+    class FileDialogService
     {
         private string filePath;
         public string FilePath { get { return filePath; }}

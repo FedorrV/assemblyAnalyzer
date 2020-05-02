@@ -9,10 +9,15 @@ using System.Data.Entity;
 using assemblyAnalyzer;
 using System;
 using System.Collections.ObjectModel;
+using assemblyAnalyze.ViewModels;
+using System.Drawing.Imaging;
+using System.Windows.Media.Imaging;
+using System.Windows;
+using System.Threading.Tasks;
 
 namespace assemblyAnalyze
 {
-    public class AnalyzerViewModel : INotifyPropertyChanged
+    public class AnalyzerViewModel : BasicViewModel,INotifyPropertyChanged 
     {
         public AnalyzerViewModel()
         {
@@ -27,22 +32,22 @@ namespace assemblyAnalyze
             }
             catch (Exception ex)
             {
-                DialogService.ShowMessage(ex.Message);//"При попытке подключиться к БД возникла ошибка.");
+                FileDialogService.ShowMessage(ex.Message);//"При попытке подключиться к БД возникла ошибка.");
                 Environment.Exit(1);
             }
         }
 
         private AssemblyAnalyzer assemblyAnalyzer; //анализатор сборок
         private ApprenticeServerDocument activeAssembly;
-        private DialogService dsOpenFile = new DialogService();
+        private FileDialogService dsOpenFile = new FileDialogService();
         private string filePath;
-        private AnalyzerContext db;
+        private DataContext db;
         IEnumerable<Part> parts;
 
-        private ObservableCollection<DGPartItem> DGParts { get; set; } = new ObservableCollection<DGPartItem>();
+        private ObservableCollection<PartViewModel> DGParts { get; set; } = new ObservableCollection<PartViewModel>();
 
-        private ObservableCollection<DGPartItem> filteredDGParts = new ObservableCollection<DGPartItem>();
-        public ObservableCollection<DGPartItem> FilteredDGParts
+        private ObservableCollection<PartViewModel> filteredDGParts = new ObservableCollection<PartViewModel>();
+        public ObservableCollection<PartViewModel> FilteredDGParts
         {
             get
             {
@@ -55,14 +60,17 @@ namespace assemblyAnalyze
             }
         }
 
-        private DGPartItem selectedDGPart;
-        public DGPartItem SelectedDGPart
+        private PartViewModel selectedDGPart;
+        public PartViewModel SelectedDGPart
         {
             get { return selectedDGPart; }
             set
             {
                 selectedDGPart = value;
                 OnPropertyChanged("SelectedDGPart");
+                ToBitmapSource(selectedDGPart.PartDoc.Thumbnail);
+                //CurPartImage = d.Result;
+                //CurPartImage = await Emfutilities.ToBitmapSource(selectedDGPart.PartDoc.Thumbnail);
                 if (selectedDGPart == null)
                     DGProperties = null;
                 else
@@ -95,14 +103,14 @@ namespace assemblyAnalyze
                 if (aA_SearchText == "")
                     FilteredDGParts = DGParts;
                 else
-                    FilteredDGParts = new ObservableCollection<DGPartItem>(DGParts.Where(x => x.Name.ToLower().Contains(aA_SearchText.ToLower())));
+                    FilteredDGParts = new ObservableCollection<PartViewModel>(DGParts.Where(x => x.Name.ToLower().Contains(aA_SearchText.ToLower())));
                 //if (FilteredDGParts.Count != DGParts.Count)
                     //DGProperties = null;
             }
         }
-        
-        private stdole.IPictureDisp curPartImage;
-        public stdole.IPictureDisp CurPartImage 
+
+        private BitmapSource curPartImage =null;
+        public BitmapSource CurPartImage 
         {
             get
             {
@@ -120,40 +128,40 @@ namespace assemblyAnalyze
         }
 
         //команда "открыть сборку"
-        private RelayCommand cmdOpenAssembly;
-        public RelayCommand CmdOpenAssembly
+        private SimpleCommand cmdOpenAssembly;
+        public SimpleCommand CmdOpenAssembly
         {
             get
             {
                 return cmdOpenAssembly ??
-                    (cmdOpenAssembly = new RelayCommand(obj =>
+                    (cmdOpenAssembly = new SimpleCommand(obj =>
                     {
                         if (dsOpenFile.OpenFileDialog("Assembly files|*.iam"))
                         {
                             try
                             {
-                                DGPartItem temp = SelectedDGPart;
+                                PartViewModel temp = SelectedDGPart;
                                 filePath = dsOpenFile.FilePath;
                                 assemblyAnalyzer.OpenAssembly(filePath);
                                 DGParts.Clear();
                                 foreach(ApprenticeServerDocument part in assemblyAnalyzer.Parts)
                                 {
-                                    DGParts.Add(new DGPartItem(part, AssemblyAnalyzer.getPartProperties(part), false));
+                                    DGParts.Add(new PartViewModel(part, AssemblyAnalyzer.getPartProperties(part), false));
                                 }
-                                DGPartItem tt = new DGPartItem() ;
-                                CurPartImage = DGParts[0].PartDoc.Thumbnail;
+                                PartViewModel tt = new PartViewModel() ;
+                                
                                 tt.Name = "dddddddddddddddddddddddddddddddddddddddd";
                                 tt.IsSaved = false;
                                 DGParts.Add(tt);
                                 FilteredDGParts = DGParts;
 
                                 if(aA_SearchText!="" && aA_SearchText!=null)
-                                    FilteredDGParts = new ObservableCollection<DGPartItem>(DGParts.Where(x => x.Name.ToLower().Contains(aA_SearchText.ToLower())));
+                                    FilteredDGParts = new ObservableCollection<PartViewModel>(DGParts.Where(x => x.Name.ToLower().Contains(aA_SearchText.ToLower())));
                                 DGProperties = null;
                             }
-                            catch(Exception ex)
+                            catch (Exception ex)
                             {
-                                DialogService.ShowMessage(ex.Message);
+                                FileDialogService.ShowMessage(ex.Message);
                             }
                         }
                     })
@@ -162,31 +170,56 @@ namespace assemblyAnalyze
         }
 
         //команда "сохранить деталь"
-        private RelayCommand cmdSavePart;
-        public RelayCommand CmdSavePart
+        private OpenDialogWindowCommand cmdSavePart;
+        public OpenDialogWindowCommand CmdSavePart
         {
             get
             {
                 return cmdSavePart ??
-                    (cmdSavePart = new RelayCommand(obj =>
+                    (cmdSavePart = new OpenDialogWindowCommand(this,
+                    (obj) =>
                     {
-
-                        DGPartItem temp = SelectedDGPart;
-                        int a = 0;
-                    }, (obj) =>
-                    {
-                        DGPartItem temp = obj as DGPartItem;
+                        try
+                        {
+                            SavePartViewModel savePartVM = obj as SavePartViewModel;
+                            if (savePartVM != null)
+                            {
+                                AA_SearchText = savePartVM.TextValue;
+                            }
+                            else throw new Exception("SavePartViewModel is null");
+                        }
+                        catch (Exception ex)
+                        {
+                            FileDialogService.ShowMessage(ex.Message);
+                        }
+                    },
+                    (obj) => {
+                        PartViewModel temp = obj as PartViewModel;
                         return temp != null && temp.IsSaved == false;
                     }
                     ));
             }
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void OnPropertyChanged([CallerMemberName]string prop = "")
+   
+        private   void ToBitmapSource(stdole.IPictureDisp pictureDisp)
         {
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(prop));
+                Metafile metaFile = null;
+                if (pictureDisp.Type == 2)
+                {
+                    //Конвертация метафайла
+                    IntPtr metafileHandle = new IntPtr(pictureDisp.Handle);
+                    metaFile = new Metafile(metafileHandle, new WmfPlaceableFileHeader());
+                }
+                using (System.Drawing.Imaging.Metafile emf = metaFile)
+                using (System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(emf.Width, emf.Height))
+                {
+                    bmp.SetResolution(emf.HorizontalResolution, emf.VerticalResolution);
+                    using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bmp))
+                    {
+                        g.DrawImage(emf, 0, 0);
+                        CurPartImage = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(bmp.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                    }
+                }
         }
     }
 }

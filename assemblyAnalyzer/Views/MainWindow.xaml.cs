@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,8 +25,8 @@ namespace assemblyAnalyze
         public MainWindow()
         {
             InitializeComponent();
-            AnalyzerViewModel analyzerViewModel = new AnalyzerViewModel();
-            this.DataContext = analyzerViewModel;
+            //AnalyzerViewModel analyzerViewModel = new AnalyzerViewModel();
+            //this.DataContext = analyzerViewModel;
         }
 
         private void DataGrid_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
@@ -33,4 +34,6 @@ namespace assemblyAnalyze
 
         }
     }
+
+   
 }

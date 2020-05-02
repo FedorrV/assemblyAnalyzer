@@ -10,11 +10,11 @@ using InventorApprentice;
 namespace assemblyAnalyzer
 {
     
-    public class DGPartItem
+    public class PartViewModel
     {
-        public DGPartItem()
+        public PartViewModel()
         {}
-        public DGPartItem(ApprenticeServerDocument partDoc, Dictionary<string, string> properties, bool isSaved= false )
+        public PartViewModel(ApprenticeServerDocument partDoc, Dictionary<string, string> properties, bool isSaved= false )
         {
             this.PartDoc = partDoc;
             this.IsSaved = isSaved;
