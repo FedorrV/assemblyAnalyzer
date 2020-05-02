@@ -68,6 +68,7 @@ namespace assemblyAnalyze
             {
                 selectedDGPart = value;
                 OnPropertyChanged("SelectedDGPart");
+                //CurPartImage.Freeze();
                 ToBitmapSource(selectedDGPart.PartDoc.Thumbnail);
                 //CurPartImage = d.Result;
                 //CurPartImage = await Emfutilities.ToBitmapSource(selectedDGPart.PartDoc.Thumbnail);
@@ -109,7 +110,7 @@ namespace assemblyAnalyze
             }
         }
 
-        private BitmapSource curPartImage =null;
+        private BitmapSource curPartImage;
         public BitmapSource CurPartImage 
         {
             get
@@ -201,12 +202,14 @@ namespace assemblyAnalyze
             }
         }
    
-        private   void ToBitmapSource(stdole.IPictureDisp pictureDisp)
+        private  async void ToBitmapSource(stdole.IPictureDisp pictureDisp)
         {
+            BitmapSource bitmap = null;
+            await Task.Run(()=>
+                {
                 Metafile metaFile = null;
                 if (pictureDisp.Type == 2)
                 {
-                    //Конвертация метафайла
                     IntPtr metafileHandle = new IntPtr(pictureDisp.Handle);
                     metaFile = new Metafile(metafileHandle, new WmfPlaceableFileHeader());
                 }
@@ -217,9 +220,14 @@ namespace assemblyAnalyze
                     using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bmp))
                     {
                         g.DrawImage(emf, 0, 0);
-                        CurPartImage = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(bmp.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                        bitmap = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(bmp.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                        bitmap.Freeze();
+                        CurPartImage = bitmap;
                     }
                 }
+            });
+           
+            
         }
     }
 }
