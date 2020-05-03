@@ -10,7 +10,7 @@ using InventorApprentice;
 namespace assemblyAnalyzer
 {
     
-    public class PartViewModel
+    public class PartViewModel: INotifyPropertyChanged
     {
         public PartViewModel(){}
         public PartViewModel(ApprenticeServerDocument partDoc, bool isSaved= false )

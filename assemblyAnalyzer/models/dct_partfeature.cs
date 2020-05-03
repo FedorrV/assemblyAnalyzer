@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -9,37 +10,24 @@ using System.Threading.Tasks;
 
 namespace assemblyAnalyzer.models
 {
-    public class Dct_partfeature: INotifyPropertyChanged
+    [Table("Dct_partfeatures")]
+    public class PartFeature
     {
         [Key]
-        public int Dct_partfeature_id { get; set; }
-        private string name;
+        [Column("Dct_partfeature_id")]
+        public int PartFeatureId { get; set; }
 
-        Dct_partfeature()
+        [Column("Name")]
+        public string Name { get; set; }
+
+        public PartFeature()
         {
 
         }
 
-        Dct_partfeature(string Name)
+        public PartFeature(string Name)
         {
-            this.name = Name;
-        }
-
-        public string Name
-        {
-            get { return name; }
-            set
-            {
-                name = value;
-                OnPropertyChanged("Name");
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void OnPropertyChanged([CallerMemberName]string prop = "")
-        {
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(prop));
+            this.Name = Name;
         }
     }
 }

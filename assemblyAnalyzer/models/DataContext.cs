@@ -13,9 +13,8 @@ namespace assemblyAnalyzer
         public DataContext() : base("DefaultConnection")
         {
         }
-
-        public DbSet<Dct_partfeature> PartFeatures { get; set; }
-        public DbSet<Mtm_part_partfeature> Part_partfeatures { get; set; }
         public DbSet<Part> Parts { get; set; }
+        public DbSet<PartFeature> PartFeatures { get; set; }
+        public DbSet<Part_PartFeature> Part_partfeatures { get; set; }
     }
 }

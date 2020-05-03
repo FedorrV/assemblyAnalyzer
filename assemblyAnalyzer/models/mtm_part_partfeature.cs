@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -9,71 +10,38 @@ using System.Threading.Tasks;
 
 namespace assemblyAnalyzer.models
 {
-    public class Mtm_part_partfeature : INotifyPropertyChanged
+    [Table("mtm_part_partfeatures")]
+    public class Part_PartFeature
     {
-        public Mtm_part_partfeature()
-        {
-        }
+        [ Key ]
+        [Column("Mtm_part_partfeature_id")]
+        public int Part_PartFeatureId { get; set; }
 
-        public Mtm_part_partfeature(int Part_id,
-                             int Partfeature_id,
-                             string Feature_value) {
-            partfeature_id = Partfeature_id;
-            part_id = Part_id;
-            feature_value = Feature_value;
-        }
-
-       // private int mtm_part_feature_id;
-        private int partfeature_id;
-        private int part_id;
-        private string feature_value;
         
-        [Key]
-        public int Mtm_part_feature_id { get; set; }
-        //{
-        //    get { return mtm_part_feature_id; }
-        //    set
-        //    {
-        //        mtm_part_feature_id = value;
-        //        OnPropertyChanged("Mtm_part_feature_id");
-        //    }
-        //}
+        [Column("Partfeature_id")]
+        public int PartFeatureId { get; set; }
+        [ForeignKey("PartFeatureId")]
+        public PartFeature PartFeature { get; set; }
 
-        public int Partfeature_id
+        [Column("Part_id")]
+        public int PartId { get; set; }
+        [ForeignKey("PartId")]
+        public Part Part { get; set; }
+
+        [Column("Feature_value")]
+        public string FeatureValue { get; set; }
+
+        public Part_PartFeature()
         {
-            get { return partfeature_id; }
-            set
-            {
-                partfeature_id = value;
-                OnPropertyChanged("Partfeature_id");
-            }
         }
 
-        public int Part_id
+        public Part_PartFeature(int Part_id,
+                             int Partfeature_id,
+                             string Feature_value)
         {
-            get { return part_id; }
-            set
-            {
-                part_id = value;
-                OnPropertyChanged("Part_id");
-            }
+            this.PartFeatureId = Partfeature_id;
+            this.PartId = Part_id;
+            this.FeatureValue = Feature_value;
         }
-
-        public string Feature_value
-        {
-            get { return feature_value; }
-            set
-            {
-                feature_value = value;
-                OnPropertyChanged("Feature_value");
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void OnPropertyChanged([CallerMemberName]string prop = "")
-        {
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(prop));
-        }
-    }
+    }  
 }
