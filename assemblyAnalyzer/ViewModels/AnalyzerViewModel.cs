@@ -14,6 +14,8 @@ using System.Drawing.Imaging;
 using System.Windows.Media.Imaging;
 using System.Windows;
 using System.Threading.Tasks;
+using System.IO;
+using System.Data.Entity.Infrastructure;
 
 namespace assemblyAnalyze
 {
@@ -21,18 +23,20 @@ namespace assemblyAnalyze
     {
         public AnalyzerViewModel()
         {
-            //DGParts = new ObservableCollection<DGPartItem>();
+            assemblyParts = new ObservableCollection<PartViewModel>();
             try
             {
                 assemblyAnalyzer = new AssemblyAnalyzer();
-                //db = new ApplicationContext();
-                //db.Parts.Load();
-
+                db = new DataContext();
+                db.Parts.Load();
+                db.PartFeatures.Load();
+                db.Part_partfeatures.Load();
                 //parts = db.Parts.Local.ToBindingList();
             }
+            
             catch (Exception ex)
             {
-                FileDialogService.ShowMessage(ex.Message);//"При попытке подключиться к БД возникла ошибка.");
+                FileDialogService.ShowMessage(ex.Message+ ex.InnerException.Message+ex.InnerException.InnerException.Message);//"При попытке подключиться к БД возникла ошибка.");
                 Environment.Exit(1);
             }
         }
@@ -75,7 +79,7 @@ namespace assemblyAnalyze
                 }
                 else
                 {
-                    updatePartPhoto(selectedAssemblyPart.PartDocument.Thumbnail);
+                    updateAssemblyPartPhoto(selectedAssemblyPart.PartDocument.Thumbnail);
                     if (selectedAssemblyPart.Properties == null)
                         selectedAssemblyPart.Properties = AssemblyAnalyzer.getPartProperties(selectedAssemblyPart.PartDocument);
                     AssemblyPartProps = selectedAssemblyPart.Properties;
@@ -143,26 +147,18 @@ namespace assemblyAnalyze
                     {
                         if (dsOpenFile.OpenFileDialog("Assembly files|*.iam"))
                         {
-                            try
+                            PartViewModel temp = SelectedAssemblyPart;
+                            filePath = dsOpenFile.FilePath;
+                            assemblyAnalyzer.OpenAssembly(filePath);
+                            assemblyParts.Clear();
+                            foreach(ApprenticeServerDocument part in assemblyAnalyzer.Parts)
                             {
-                                PartViewModel temp = SelectedAssemblyPart;
-                                filePath = dsOpenFile.FilePath;
-                                assemblyAnalyzer.OpenAssembly(filePath);
-                                assemblyParts.Clear();
-                                foreach(ApprenticeServerDocument part in assemblyAnalyzer.Parts)
-                                {
-                                    assemblyParts.Add(new PartViewModel(part,  false));
-                                }
-                                
-                                FilteredAssemblyParts = assemblyParts;
-                                if(assemblyPartSearchText!="" && assemblyPartSearchText!=null)
-                                    FilteredAssemblyParts = new ObservableCollection<PartViewModel>(assemblyParts.Where(x => x.Name.ToLower().Contains(assemblyPartSearchText.ToLower())));
-                                AssemblyPartProps = null;
+                                assemblyParts.Add(new PartViewModel(part));
                             }
-                            catch (Exception ex)
-                            {
-                                FileDialogService.ShowMessage(ex.Message);
-                            }
+                            FilteredAssemblyParts = assemblyParts;
+                            if(assemblyPartSearchText!="" && assemblyPartSearchText!=null)
+                                FilteredAssemblyParts = new ObservableCollection<PartViewModel>(assemblyParts.Where(x => x.Name.ToLower().Contains(assemblyPartSearchText.ToLower())));
+                            AssemblyPartProps = null;
                         }
                     })
                     );
@@ -179,19 +175,16 @@ namespace assemblyAnalyze
                     (cmdSavePart = new OpenDialogWindowCommand(this,
                     (obj) =>
                     {
-                        try
+                        SavePartViewModel savePartVM = obj as SavePartViewModel;
+                        if (savePartVM != null)
                         {
-                            SavePartViewModel savePartVM = obj as SavePartViewModel;
-                            if (savePartVM != null)
+                            if (savePartVM.IsSaved)
                             {
-                                AssemblyPartSearchText = savePartVM.TextValue;
+                                String partDesctiprion = savePartVM.PartDescription;
+                                saveAssemblyPartInDB(selectedAssemblyPart, partDesctiprion);
                             }
-                            else throw new Exception("SavePartViewModel is null");
                         }
-                        catch (Exception ex)
-                        {
-                            FileDialogService.ShowMessage(ex.Message);
-                        }
+                        else throw new Exception("Внутренняя ошибка при передаче данных между окнами.");
                     },
                     (obj) => {
                         PartViewModel temp = obj as PartViewModel;
@@ -200,29 +193,106 @@ namespace assemblyAnalyze
                     ));
             }
         }
-   
-        private async void updatePartPhoto(stdole.IPictureDisp pictureDisp)
+        
+        private byte[] BitmapSource_2_ByteArray(BitmapSource bitmap)
+        {
+            JpegBitmapEncoder encoder = new JpegBitmapEncoder();
+            //encoder.Frames.Add(BitmapFrame.Create(bitmapSource));
+            encoder.QualityLevel = 100;
+            byte[] bit;
+            using (MemoryStream stream = new MemoryStream())
+            {
+                encoder.Frames.Add(BitmapFrame.Create(bitmap));
+                encoder.Save(stream);
+                bit = stream.ToArray();
+                stream.Close();
+            }
+            return bit;
+        }
+
+        private BitmapSource IPictureDisp_2_BitmapSource(stdole.IPictureDisp pictureDisp)
         {
             BitmapSource bitmap = null;
-            await Task.Run(()=>
+            Metafile metaFile = null;
+            if (pictureDisp.Type == 2)
+            {
+                IntPtr metafileHandle = new IntPtr(pictureDisp.Handle);
+                metaFile = new Metafile(metafileHandle, new WmfPlaceableFileHeader());
+            }
+            using (System.Drawing.Imaging.Metafile emf = metaFile)
+            using (System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(emf.Width, emf.Height))
+            {
+                bmp.SetResolution(emf.HorizontalResolution, emf.VerticalResolution);
+                using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bmp))
                 {
-                Metafile metaFile = null;
-                if (pictureDisp.Type == 2)
-                {
-                    IntPtr metafileHandle = new IntPtr(pictureDisp.Handle);
-                    metaFile = new Metafile(metafileHandle, new WmfPlaceableFileHeader());
+                    g.DrawImage(emf, 0, 0);
+                    bitmap = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(bmp.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                    return bitmap;
                 }
-                using (System.Drawing.Imaging.Metafile emf = metaFile)
-                using (System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(emf.Width, emf.Height))
+            }
+        }
+
+        private async void updateAssemblyPartPhoto(stdole.IPictureDisp pictureDisp)
+        {
+            await Task.Run(()=>
+            {
+                BitmapSource bitmap = IPictureDisp_2_BitmapSource(pictureDisp);
+                bitmap.Freeze();
+                CurAssemblyPartImage = bitmap;
+            });
+        }
+
+        private async void saveAssemblyPartInDB(PartViewModel part, string description)
+        {
+            stdole.IPictureDisp disp = part.PartDocument.Thumbnail;
+            part.IsSaved = true;
+            await Task.Run(()=>
+            {
+                try
                 {
-                    bmp.SetResolution(emf.HorizontalResolution, emf.VerticalResolution);
-                    using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bmp))
+                    byte[] ar = BitmapSource_2_ByteArray(IPictureDisp_2_BitmapSource(disp));
+                    Part newPart = new Part(part.PartDocument.DisplayName,
+                                            DateTime.Now.ToString(),
+                                            part.PartDocument.InternalName,
+                                            part.PartDocument.RevisionId,
+                                            part.PartDocument.DatabaseRevisionId,
+                                            part.PartDocument.ComponentDefinition.ModelGeometryVersion,
+                                            ar,
+                                            description);
+
+                    List<Part_PartFeature> part_PartFeatures = new List<Part_PartFeature>();
+                    for(int i =0; i < part.Properties.Count; i++)
                     {
-                        g.DrawImage(emf, 0, 0);
-                        bitmap = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(bmp.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-                        bitmap.Freeze();
-                        CurAssemblyPartImage = bitmap;
+                        string key = part.Properties.ElementAt(i).Key;
+                        assemblyAnalyzer.models.PartFeature partFeature = db.PartFeatures.FirstOrDefault(x => x.Name == key);
+                        if (partFeature == null)
+                        {
+                            partFeature = db.PartFeatures.Add(new assemblyAnalyzer.models.PartFeature(part.Properties.ElementAt(i).Key));
+                        }
+                        Part_PartFeature part_PartFeature = new Part_PartFeature();
+                        part_PartFeature.PartFeature = partFeature;
+                        part_PartFeature.Part = newPart;
+                        part_PartFeature.FeatureValue = part.Properties.ElementAt(i).Value;
+                        part_PartFeatures.Add( part_PartFeature);
                     }
+                    db.Parts.Add(newPart);
+                    db.Part_partfeatures.AddRange(part_PartFeatures);
+                    db.SaveChanges();
+                }
+                catch (DbUpdateException ex)
+                {
+                    Part findedPart = db.Parts.FirstOrDefault(p => p.InternalName == part.PartDocument.InternalName && p.RevisionId == part.PartDocument.RevisionId);
+                    if (findedPart != null)
+                        FileDialogService.ShowMessage($"Данная деталь уже сохранена под именем {findedPart.Name}, с описанием\n{findedPart.Description}.");
+                    else
+                        FileDialogService.ShowMessage($"Ошибка при сохранении детали. Деталь не сохранена.");
+                    part.IsSaved = false;
+                }
+                catch (Exception ex)
+                {
+                    FileDialogService.ShowMessage($"Неизвестная ошибка при сохранении в детали. Деталь не сохранена.");
+                    part.IsSaved = false;
+                    //throw new Exception($"{ex.Message+"\n"}Ошибка при сохранении в БД.");
                 }
             });
         }
