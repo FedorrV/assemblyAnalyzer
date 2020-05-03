@@ -23,17 +23,20 @@ namespace assemblyAnalyze
     {
         public AnalyzerViewModel()
         {
+            //при старте открытая вкладка это "База деталей"
+            openedTabItemAssembly = false;
+            openedTabItemDB = true;
+            
+            assemblyAnalyzer = new AssemblyAnalyzer();
             assemblyParts = new ObservableCollection<PartViewModel>();
             try
             {
-                assemblyAnalyzer = new AssemblyAnalyzer();
                 db = new DataContext();
                 db.Parts.Load();
                 db.PartFeatures.Load();
                 db.Part_partfeatures.Load();
                 //parts = db.Parts.Local.ToBindingList();
             }
-            
             catch (Exception ex)
             {
                 FileDialogService.ShowMessage(ex.Message+ ex.InnerException.Message+ex.InnerException.InnerException.Message);//"При попытке подключиться к БД возникла ошибка.");
@@ -61,6 +64,28 @@ namespace assemblyAnalyze
             {
                 filteredAssemblyParts = value;
                 OnPropertyChanged("FilteredAssemblyParts");
+            }
+        }
+
+        private bool openedTabItemAssembly ;
+        public bool OpenedTabItemAssembly
+        {
+            get { return openedTabItemAssembly; }
+            set
+            {
+                openedTabItemAssembly = value;
+                OnPropertyChanged("OpenedTabItemAssembly");
+            }
+        }
+
+        private bool openedTabItemDB = true;
+        public bool  OpenedTabItemDB
+        {
+            get { return openedTabItemDB; }
+            set
+            {
+                openedTabItemDB = value;
+                OnPropertyChanged("OpenedTabItemDB");
             }
         }
 
@@ -145,6 +170,8 @@ namespace assemblyAnalyze
                 return cmdOpenAssembly ??
                     (cmdOpenAssembly = new SimpleCommand(obj =>
                     {
+                        if(!OpenedTabItemAssembly)
+                            OpenedTabItemAssembly = true; //открываем TabItem для анализа сборки
                         if (dsOpenFile.OpenFileDialog("Assembly files|*.iam"))
                         {
                             PartViewModel temp = SelectedAssemblyPart;
@@ -166,13 +193,13 @@ namespace assemblyAnalyze
         }
 
         //команда "сохранить деталь"
-        private OpenDialogWindowCommand cmdSavePart;
-        public OpenDialogWindowCommand CmdSavePart
+        private OpenDialogWindowCommand cmdSaveAssemblyPart;
+        public OpenDialogWindowCommand CmdSaveAssemblyPart
         {
             get
             {
-                return cmdSavePart ??
-                    (cmdSavePart = new OpenDialogWindowCommand(this,
+                return cmdSaveAssemblyPart ??
+                    (cmdSaveAssemblyPart = new OpenDialogWindowCommand(this,
                     (obj) =>
                     {
                         SavePartViewModel savePartVM = obj as SavePartViewModel;
@@ -188,7 +215,7 @@ namespace assemblyAnalyze
                     },
                     (obj) => {
                         PartViewModel temp = obj as PartViewModel;
-                        return temp != null && temp.IsSaved == false;
+                        return temp?.IsSaved == false;
                     }
                     ));
             }

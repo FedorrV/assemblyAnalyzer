@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Title="AssemblyAnalyzer" Height="520" Width="750"
         MinHeight="430" MinWidth="700"
-        FontSize="12px">
+        FontSize="13px">
     <Window.Resources>
         <Style TargetType="TextBlock" x:Key="DGTextBlock">
             <Setter Property="VerticalAlignment" Value="Center" />
@@ -75,7 +75,7 @@
             </Style.Triggers>
         </Style>
     </Window.Resources>
-    
+
     <Grid Margin="0"
         Background="#F0F0F0">
         <Grid.RowDefinitions>
@@ -106,7 +106,7 @@
                 </StackPanel>
             </Button>
             <Separator/>
-            <Button Height="35px" Padding="1,0,8,0">
+            <Button Height="35px" Padding="1,0,8,0" IsEnabled="False">
                 <StackPanel Orientation="Horizontal">
                     <Image Source="/Resource/search.png" Width="20px" Style="{StaticResource BTNImage}"/>
                     <TextBlock Margin="3,0,0,0" VerticalAlignment="Center">Идентифицировать деталь</TextBlock>
@@ -114,14 +114,15 @@
             </Button>
         </ToolBar>
         <TabControl Grid.Row="2" Margin="5,0,5,5">
-            <TabItem Header="Анализ сборки">
+            <TabItem Header="Анализ сборки" IsSelected="{Binding OpenedTabItemAssembly}" Height="22" VerticalAlignment="Top">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1*" MaxWidth="400px" MinWidth="150px"></ColumnDefinition>
+                        <ColumnDefinition Width="141*" MaxWidth="400px" MinWidth="150px"></ColumnDefinition>
+                        <ColumnDefinition Width="40*"/>
                         <ColumnDefinition Width="2px"></ColumnDefinition>
-                        <ColumnDefinition Width="3*" MinWidth="500"></ColumnDefinition>
+                        <ColumnDefinition Width="543*" MinWidth="500"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1">
+                    <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1" Grid.ColumnSpan="2">
                         <Grid Background="#F0F0F0">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="*"></RowDefinition>
@@ -156,9 +157,9 @@
                             </Grid>
                         </Grid>
                     </Border>
-                    <GridSplitter Grid.Column="1" ShowsPreview="False" 
+                    <GridSplitter Grid.Column="2" ShowsPreview="False" 
                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="White"/>
-                    <Grid Grid.Column="2" MinWidth="400px">
+                    <Grid Grid.Column="3" MinWidth="400px">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="auto"></RowDefinition>
                             <RowDefinition Height="*"></RowDefinition>
@@ -172,14 +173,20 @@
                              Height="32px" Padding="1px,1px,1px,1px" Background="White" >
                                 <TextBox  BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Left" Style="{StaticResource searchTextBox}"
                                 Width="150" Height="25px" Margin="0,0,8,0" Text="{Binding Path=AssemblyPartSearchText, UpdateSourceTrigger=PropertyChanged}" >
-                                    
                                 </TextBox>
                                 <Separator/>
-                                <Button Height="32px" Padding="4,0,10,0" Margin="4,0,4,0" 
-                                 Command="{Binding CmdSavePart}" CommandParameter="{Binding SelectedAssemblyPart}">
+                                <Button Height="32px" Padding="4,0,10,0" Margin="8,0,0,0" ToolTip="Добавить деталь в базу деталей"
+                                 Command="{Binding CmdSaveAssemblyPart}" CommandParameter="{Binding SelectedAssemblyPart}">
                                     <StackPanel Orientation="Horizontal">
                                         <Image Source="/Resource/addToDB.png" Width="20px" Style="{StaticResource BTNImage}"/>
-                                        <TextBlock Margin="3,0,0,0" VerticalAlignment="Center">Сохранить в БД</TextBlock>
+                                        <TextBlock Margin="3,0,0,0" VerticalAlignment="Center">Сохранить</TextBlock>
+                                    </StackPanel>
+                                </Button>
+                                <Button Height="32px" Padding="4,0,10,0" Margin="0,0,4,0" IsEnabled="False" ToolTip="Удалить деталь из базы деталей"
+                                 Command="{Binding CmdDeletePart}" CommandParameter="{Binding }">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="/Resource/removeFromDB.png" Width="20px" Style="{StaticResource BTNImage}"/>
+                                        <TextBlock Margin="3,0,0,0" VerticalAlignment="Center">Удалить</TextBlock>
                                     </StackPanel>
                                 </Button>
                             </ToolBar>
@@ -187,12 +194,12 @@
                         <DataGrid Grid.Row="1" Grid.Column="0" Margin="0,2,2,0"  Style="{StaticResource DG}"
                         ItemsSource="{Binding FilteredAssemblyParts}" SelectedItem="{Binding SelectedAssemblyPart}" Width="Auto">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Название детали"  MinWidth="198" Width="Auto" 
+                                <DataGridTextColumn Header="Название детали"  MinWidth="180" Width="Auto" 
                                  Binding="{Binding Name}" ElementStyle="{StaticResource DGTextBlock}">
                                 </DataGridTextColumn>
-                                
+
                                 <DataGridCheckBoxColumn Header="Сохранено в БД" Width="auto"
-                                MinWidth="100"  ElementStyle="{StaticResource DGCkeckBox}" Binding="{Binding IsSaved}" >
+                                MinWidth="108"  ElementStyle="{StaticResource DGCkeckBox}" Binding="{Binding IsSaved}" >
                                 </DataGridCheckBoxColumn>
                             </DataGrid.Columns>
                         </DataGrid>
@@ -209,42 +216,82 @@
                         </DataGrid>
                     </Grid>
                 </Grid>
-
             </TabItem>
-            <TabItem Header="База деталей">
+            <TabItem Header="База деталей" IsSelected="{Binding OpenedTabItemDB}">
                 <Grid  MinWidth="400px">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="auto"></RowDefinition>
                         <RowDefinition Height="*"></RowDefinition>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition Width="5*"/>
-                        <ColumnDefinition Width="330px"></ColumnDefinition>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="1*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <!--<Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">-->
                     <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" BorderBrush="Gray" BorderThickness="1">
-                        <ToolBar Height="32px" Padding="1px,1px,1px,1px" Background="White" >
+                        <ToolBar Height="36px" Padding="1px,1px,1px,1px" Background="White" >
                             <TextBox  BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Left" 
                             Width="150" Height="25px" Margin="0,0,8,0" Style="{StaticResource searchTextBox}"></TextBox>
-                            <Button Height="30px" Padding="4,0,10,0" Margin="0,0,4,0">Поиск</Button>
                             <Separator/>
-                            <Button Height="30px" Padding="4,0,10,0" Margin="4,0,4,0">Удалить из базы</Button>
+                            <Button Height="32px" Padding="4,0,4,0" Margin="8,0,0,0" ToolTip="Обновить">
+                                <Image Source="/Resource/updateDB3.png" Width="24" Height="25" Style="{StaticResource BTNImage}"/>
+                            </Button>
+                            <Button Height="32px" Padding="4,0,4,0" Margin="0,0,0,0" 
+                                 Command="{Binding CmdDeletePart}" CommandParameter="{Binding }">
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="/Resource/removeFromDB.png" Width="23px" Style="{StaticResource BTNImage}"/>
+                                    <TextBlock Margin="3,0,0,0" VerticalAlignment="Center">Удалить деталь</TextBlock>
+                                </StackPanel>
+                            </Button>
                         </ToolBar>
                     </Border>
-                    <DataGrid Grid.Row="1" Grid.Column="0" Margin="0,2,2,0" Grid.ColumnSpan="2"
-                     Style="{StaticResource DG}">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Название детали" Width="160" MinWidth="160" ElementStyle="{StaticResource DGTextBlock}">
-                            </DataGridTextColumn>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="180"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <DataGrid Grid.Column="0" Margin="0,2,0,0" 
+                         Style="{StaticResource DG}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Название детали" Width="auto" MinWidth="160" ElementStyle="{StaticResource DGTextBlock}">
+                                </DataGridTextColumn>
 
-                            <DataGridCheckBoxColumn Header="Дата сохранения" Width="auto" MinWidth="70" ElementStyle="{StaticResource DGCkeckBox}">
-                            </DataGridCheckBoxColumn>
+                                <DataGridCheckBoxColumn Header="Дата сохранения" Width="auto" MinWidth="70" ElementStyle="{StaticResource DGCkeckBox}">
+                                </DataGridCheckBoxColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="1 2 1 1" Margin="-1 2 2 0">
+                            <Grid Background="White" >
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="25"></RowDefinition>
+                                    <RowDefinition Height="Auto"></RowDefinition>
+                                    <RowDefinition Height="*"></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <Border Grid.Row="0" BorderBrush="#D5D5D5" BorderThickness="1 0 0 1" Margin="0 -0.75 0 1">
+                                    <TextBlock Padding="4 4.25 2 2">
+                                        <TextBlock.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1" >
+                                                <GradientStop Color="White" Offset="0.1" />
+                                                <GradientStop Color="#F5F6F8" Offset="1.0" />
+                                            </LinearGradientBrush>
+                                        </TextBlock.Background>
+                                        Описание
+                                    </TextBlock>
+                                </Border>
+                                <Grid Grid.Row="1" Width="auto" Height="auto" MaxHeight="170px" Margin="3,0,3,3">
+                                    <Border Margin="15px" MaxWidth="120px"
+                                            BorderBrush="Gray" BorderThickness="1">
+                                        <Image Source="{Binding CurDBPartImage}"></Image>
+                                    </Border>
+                                </Grid>
+                                <TextBlock Grid.Row="2" Padding="4 4.25 4 4" Text="{Binding DBPartDescription}">
+                                        
+                                </TextBlock>
+                            </Grid>
+                        </Border>
+                    </Grid>
 
-                            <DataGridTextColumn Header="Описание" Width="*" ElementStyle="{StaticResource DGTextBlock}">
-                            </DataGridTextColumn>
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    
                     <DataGrid Grid.Row="1" Grid.Column="2" Margin="0,2,0,0"
                     Style="{StaticResource DG}">
                         <DataGrid.Columns>

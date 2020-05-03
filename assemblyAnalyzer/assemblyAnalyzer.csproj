@@ -200,10 +200,20 @@
   <ItemGroup>
     <Resource Include="Resource\OpenFile.png" />
     <Resource Include="Resource\search.png" />
+    <Resource Include="Resource\updateDB.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resource\addToDB.png" />
     <Resource Include="Resource\removeFromDB.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resource\updateDB1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resource\updateDB2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resource\updateDB3.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

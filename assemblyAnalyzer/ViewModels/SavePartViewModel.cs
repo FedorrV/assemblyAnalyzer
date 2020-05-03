@@ -11,18 +11,18 @@ namespace assemblyAnalyze.ViewModels
     public class SavePartViewModel: BasicViewModel, INotifyPropertyChanged
     {
         public bool IsSaved = false;
-        private string textValue;
-        public string TextValue
+        private string partDescription;
+        public string PartDescription
         {
-            get { return textValue; }
+            get { return partDescription; }
             set
             {
-                textValue = value;
-                if (textValue.Length == 150)
+                partDescription = value;
+                if (partDescription.Length == 150)
                     AlertMessage = "Не более 150 символов";
                 else
                     AlertMessage = "";
-                OnPropertyChanged("TextValue");
+                OnPropertyChanged("PartDescription");
             }
         }
 
@@ -46,10 +46,8 @@ namespace assemblyAnalyze.ViewModels
                     (cmdSavePart = new SimpleCommand(obj =>
                     {
                         IsSaved = true;
-                    }, (obj)=> {return obj != null && obj.ToString().Length != 0; }));
+                    }, (obj)=> {return !string.IsNullOrEmpty(obj?.ToString()); }));
             }
         }
-
-        
     }
 }

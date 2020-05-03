@@ -25,8 +25,8 @@ namespace assemblyAnalyze.Services
         }
         public static void ShowMessage(string message)
         {
-            MessageBox.Show(message+"\nПрограмма аварийно завершается.");
-            Environment.Exit(1);
+            MessageBox.Show(message);
+            
         }
     }
 }
