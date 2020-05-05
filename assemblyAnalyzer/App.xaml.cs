@@ -21,6 +21,7 @@ namespace assemblyAnalyze
         {
             displayRootRegistry.RegisterWindowType<AnalyzerViewModel, MainWindow>();
             displayRootRegistry.RegisterWindowType<SavePartViewModel, SavePart>();
+            displayRootRegistry.RegisterWindowType<ConfirmActionViewModel, ConfirmAction>();
             //displayRootRegistry.RegisterWindowType<DialogWindowViewModel, DialogWindow>();
         }
 

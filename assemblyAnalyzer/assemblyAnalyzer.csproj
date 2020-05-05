@@ -115,6 +115,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ViewModels\ConfirmActionViewModel.cs" />
+    <Compile Include="Views\ConfirmAction.xaml.cs">
+      <DependentUpon>ConfirmAction.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DisplayRootRegistry.cs" />
     <Compile Include="models\DataContext.cs" />
     <Compile Include="models\Dct_partfeature.cs" />
@@ -128,6 +132,10 @@
     <Compile Include="Views\SavePart.xaml.cs">
       <DependentUpon>SavePart.xaml</DependentUpon>
     </Compile>
+    <Page Include="Views\ConfirmAction.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

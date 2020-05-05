@@ -43,7 +43,7 @@ namespace assemblyAnalyze
         }
 
         private AssemblyAnalyzer assemblyAnalyzer; //анализатор сборок
-        private ApprenticeServerDocument activeAssembly;
+        ///private ApprenticeServerDocument activeAssembly;
         private FileDialogService dsOpenFile = new FileDialogService();
         private DataContext db;
 
@@ -175,17 +175,40 @@ namespace assemblyAnalyze
         }
 
         //команда "удалить деталь"
-        private SimpleCommand сmdDeleteDBPart;
-        public SimpleCommand CmdDeleteDBPart
+       // private SimpleCommand сmdDeleteDBPart;
+       // public SimpleCommand CmdDeleteDBPart
+       // {
+       //     get
+       //     {
+       //         return сmdDeleteDBPart ??
+       //             (сmdDeleteDBPart = new SimpleCommand(obj => deleteDBPart(selectedDBPart),
+       //             (obj)=> obj!=null));
+       //     }
+       // }
+
+        //команда "сохранить деталь"
+        private OpenDialogWindowCommand<ConfirmActionViewModel> сmdDeleteDBPart;
+        public OpenDialogWindowCommand<ConfirmActionViewModel> CmdDeleteDBPart
         {
             get
             {
                 return сmdDeleteDBPart ??
-                    (сmdDeleteDBPart = new SimpleCommand(obj => deleteDBPart(selectedDBPart),
-                    (obj)=> obj!=null));
+                    (сmdDeleteDBPart = new OpenDialogWindowCommand<ConfirmActionViewModel>(
+                    (obj) =>
+                    {
+                        ConfirmActionViewModel savePartVM = obj as ConfirmActionViewModel;
+                        if (savePartVM != null)
+                        {
+                            if (savePartVM.IsConfirmed)
+                            {
+                                deleteDBPart(selectedDBPart);
+                            }
+                        }
+                        else throw new Exception("Внутренняя ошибка при передаче данных между окнами.");
+                    }, (obj) => obj != null));
             }
         }
-        
+
         private async void deleteDBPart(Part selectedPart)
         {
             try
@@ -246,7 +269,11 @@ namespace assemblyAnalyze
             await Task.Run(() => {
                 foreach (Part_PartFeature ppf in currentPart.Part_PartFeatures)
                 {
-                    properties.Add(ppf?.PartFeature?.Name, ppf?.FeatureValue);
+                    try
+                    {
+                        properties.Add(ppf?.PartFeature?.Name, ppf?.FeatureValue);
+                    }
+                    catch { }
                 }
             });
             DBPartProperties = properties;
@@ -368,7 +395,7 @@ namespace assemblyAnalyze
                             AssemblyPartProps = null;
                         }
                     })
-                    );
+                );
             }
         }
 
@@ -383,6 +410,7 @@ namespace assemblyAnalyze
                     (obj) =>
                     {
                         SavePartViewModel savePartVM = obj as SavePartViewModel;
+                        
                         if (savePartVM != null)
                         {
                             if (savePartVM.IsSaved)
@@ -392,6 +420,7 @@ namespace assemblyAnalyze
                             }
                         }
                         else throw new Exception("Внутренняя ошибка при передаче данных между окнами.");
+                        savePartVM = null;
                     },
                     (obj) => {
                         PartViewModel temp = obj as PartViewModel;
@@ -400,7 +429,6 @@ namespace assemblyAnalyze
                     ));
             }
         }
-
         
         private byte[] BitmapSource_2_ByteArray(BitmapSource bitmap)
         {

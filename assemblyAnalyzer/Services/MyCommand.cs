@@ -81,6 +81,7 @@ namespace assemblyAnalyzer
             await displayRootRegistry.ShowModalPresentation(ViewModel);
             
             this.execute(ViewModel);
+            ViewModel = default(T);
         }
     }
 }
