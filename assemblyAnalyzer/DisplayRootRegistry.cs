@@ -84,7 +84,7 @@ namespace assemblyAnalyze
             }
             catch(Exception ex)
             {
-                FileDialogService.ShowMessage(@"{ex.Message}\nФатальная ошибка, программа аварийно закрывается");
+                MessageBox.Show(@"{ex.Message}\nФатальная ошибка, программа аварийно закрывается");
                 Environment.Exit(1);
             }
         }

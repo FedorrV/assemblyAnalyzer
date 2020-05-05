@@ -12,7 +12,7 @@
     <Window.Resources>
         <Style TargetType="TextBlock" x:Key="DGTextBlock">
             <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Padding" Value="4,0,0,0"/>
+            <Setter Property="Padding" Value="4,0,4,0"/>
         </Style>
         <Style TargetType="CheckBox" x:Key="DGCkeckBox">
             <Setter Property="VerticalAlignment" Value="Center" />
@@ -183,7 +183,7 @@
                                     </StackPanel>
                                 </Button>
                                 <Button Height="32px" Padding="4,0,10,0" Margin="0,0,4,0" IsEnabled="False" ToolTip="Удалить деталь из базы деталей"
-                                 Command="{Binding CmdDeletePart}" CommandParameter="{Binding }">
+                                 Command="{Binding CmdDeleteAssemblyPart}" CommandParameter="{Binding }">
                                     <StackPanel Orientation="Horizontal">
                                         <Image Source="/Resource/removeFromDB.png" Width="20px" Style="{StaticResource BTNImage}"/>
                                         <TextBlock Margin="3,0,0,0" VerticalAlignment="Center">Удалить</TextBlock>
@@ -230,16 +230,16 @@
                     <!--<Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">-->
                     <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" BorderBrush="Gray" BorderThickness="1">
                         <ToolBar Height="36px" Padding="1px,1px,1px,1px" Background="White" >
-                            <TextBox  BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Left" 
+                            <TextBox  BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Left" Text="{Binding DBPartSearchText, UpdateSourceTrigger=PropertyChanged}"
                             Width="150" Height="25px" Margin="0,0,8,0" Style="{StaticResource searchTextBox}"></TextBox>
                             <Separator/>
-                            <Button Height="32px" Padding="4,0,4,0" Margin="8,0,0,0" ToolTip="Обновить">
-                                <Image Source="/Resource/updateDB3.png" Width="24" Height="25" Style="{StaticResource BTNImage}"/>
+                            <Button Command="{Binding СmdRefreshDBParts}" Height="32px" Padding="4,0,4,0" Margin="8,0,0,0" ToolTip="Обновить">
+                                <Image Source="/Resource/updateDB3.png" Width="23" Height="23" Style="{StaticResource BTNImage}"/>
                             </Button>
                             <Button Height="32px" Padding="4,0,4,0" Margin="0,0,0,0" 
-                                 Command="{Binding CmdDeletePart}" CommandParameter="{Binding }">
+                                 Command="{Binding CmdDeleteDBPart}" CommandParameter="{Binding SelectedDBPart}">
                                 <StackPanel Orientation="Horizontal">
-                                    <Image Source="/Resource/removeFromDB.png" Width="23px" Style="{StaticResource BTNImage}"/>
+                                    <Image Source="/Resource/removeFromDB.png" Width="22px" Style="{StaticResource BTNImage}"/>
                                     <TextBlock Margin="3,0,0,0" VerticalAlignment="Center">Удалить деталь</TextBlock>
                                 </StackPanel>
                             </Button>
@@ -247,17 +247,19 @@
                     </Border>
                     <Grid Grid.Row="1">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"></ColumnDefinition>
-                            <ColumnDefinition Width="180"></ColumnDefinition>
+                            <ColumnDefinition Width="5*"></ColumnDefinition>
+                            <ColumnDefinition Width="3*" MaxWidth="240"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
-                        <DataGrid Grid.Column="0" Margin="0,2,0,0" 
-                         Style="{StaticResource DG}">
+                        <DataGrid Grid.Column="0" Margin="0,2,0,0" Padding="0 0 0 0" 
+                         Style="{StaticResource DG}" SelectedItem="{Binding SelectedDBPart}" ItemsSource="{Binding FilteredDBParts}">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Название детали" Width="auto" MinWidth="160" ElementStyle="{StaticResource DGTextBlock}">
+                                <DataGridTextColumn Header="Название детали" Width="Auto" 
+                                 MinWidth="190" ElementStyle="{StaticResource DGTextBlock}" Binding="{Binding Name}">
                                 </DataGridTextColumn>
 
-                                <DataGridCheckBoxColumn Header="Дата сохранения" Width="auto" MinWidth="70" ElementStyle="{StaticResource DGCkeckBox}">
-                                </DataGridCheckBoxColumn>
+                                <DataGridTextColumn Header="Дата сохранения" Width="auto" MinWidth="70" 
+                                ElementStyle="{StaticResource DGTextBlock}" Binding="{Binding InsertDate}">
+                                </DataGridTextColumn>
                             </DataGrid.Columns>
                         </DataGrid>
                         <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="1 2 1 1" Margin="-1 2 2 0">
@@ -281,29 +283,26 @@
                                 <Grid Grid.Row="1" Width="auto" Height="auto" MaxHeight="170px" Margin="3,0,3,3">
                                     <Border Margin="15px" MaxWidth="120px"
                                             BorderBrush="Gray" BorderThickness="1">
-                                        <Image Source="{Binding CurDBPartImage}"></Image>
+                                        <Image Source="{Binding DBPartImage}"></Image>
                                     </Border>
                                 </Grid>
-                                <TextBlock Grid.Row="2" Padding="4 4.25 4 4" Text="{Binding DBPartDescription}">
-                                        
+                                <TextBlock Grid.Row="2" Margin="6" Padding="4 4.25 4 4" Text="{Binding DBPartDescription}" TextWrapping="Wrap">
+                                    
                                 </TextBlock>
                             </Grid>
                         </Border>
                     </Grid>
-
-                    
-                    <DataGrid Grid.Row="1" Grid.Column="2" Margin="0,2,0,0"
+                    <DataGrid Grid.Row="1" Grid.Column="2" Margin="0,2,0,0" ItemsSource="{Binding DBPartProperties}"
                     Style="{StaticResource DG}">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Свойство" Width="*" MinWidth="110" ElementStyle="{StaticResource DGTextBlock}">
+                            <DataGridTextColumn Header="Свойство" Width="auto" MinWidth="110" Binding="{Binding Key}" ElementStyle="{StaticResource DGTextBlock}">
                             </DataGridTextColumn>
-                            <DataGridTextColumn Header="Значение" Width="*" MinWidth="110" ElementStyle="{StaticResource DGTextBlock}">
+                            <DataGridTextColumn Header="Значение" Width="auto" MinWidth="110" Binding="{Binding Value}" ElementStyle="{StaticResource DGTextBlock}">
                             </DataGridTextColumn>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>
             </TabItem>
         </TabControl>
-
     </Grid>
 </Window>

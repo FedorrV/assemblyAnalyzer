@@ -27,19 +27,17 @@ namespace assemblyAnalyze
             openedTabItemAssembly = false;
             openedTabItemDB = true;
             
-            assemblyAnalyzer = new AssemblyAnalyzer();
             assemblyParts = new ObservableCollection<PartViewModel>();
+
             try
             {
+                assemblyAnalyzer = new AssemblyAnalyzer();
                 db = new DataContext();
-                db.Parts.Load();
-                db.PartFeatures.Load();
-                db.Part_partfeatures.Load();
-                //parts = db.Parts.Local.ToBindingList();
+                loadDBParts();
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                FileDialogService.ShowMessage(ex.Message+ ex.InnerException.Message+ex.InnerException.InnerException.Message);//"При попытке подключиться к БД возникла ошибка.");
+                MessageBox.Show($"{ex.Message}\nПрограмма аварийно закрывается.");
                 Environment.Exit(1);
             }
         }
@@ -47,9 +45,218 @@ namespace assemblyAnalyze
         private AssemblyAnalyzer assemblyAnalyzer; //анализатор сборок
         private ApprenticeServerDocument activeAssembly;
         private FileDialogService dsOpenFile = new FileDialogService();
-        private string filePath;
         private DataContext db;
-        IEnumerable<Part> parts;
+
+        private bool openedTabItemAssembly;
+        public bool OpenedTabItemAssembly
+        {
+            get { return openedTabItemAssembly; }
+            set
+            {
+                openedTabItemAssembly = value;
+                OnPropertyChanged("OpenedTabItemAssembly");
+            }
+        }
+
+        private bool openedTabItemDB = true;
+        public bool OpenedTabItemDB
+        {
+            get { return openedTabItemDB; }
+            set
+            {
+                openedTabItemDB = value;
+                OnPropertyChanged("OpenedTabItemDB");
+            }
+        }
+
+        /*---------------*/
+        /*ПЕРЕМЕННЫЕ ДЛЯ TabItem "БАЗА ДЕТАЛЕЙ"*/
+        public ICollection<Part> DBParts;
+
+        private ObservableCollection<Part> filteredDBParts;
+        public ObservableCollection<Part> FilteredDBParts
+        {
+            get
+            {
+                return filteredDBParts;
+            }
+            set
+            {
+                filteredDBParts = value;
+                OnPropertyChanged("FilteredDBParts");
+            }
+        }
+
+        private Part selectedDBPart;
+        public Part SelectedDBPart
+        {
+            get { return selectedDBPart; }
+            set
+            {
+                selectedDBPart = value;
+                OnPropertyChanged("SelectedDBPart");
+                if (selectedDBPart == null)
+                {
+                    DBPartProperties = null;
+                    DBPartDescription = "";
+                    DBPartImage = null;
+                }
+                else
+                {
+                    DBPartDescription = selectedDBPart.Description;
+                    refreshDBPartInfo(selectedDBPart);
+                }
+            }
+        }
+
+        private Dictionary<string, string> dBPartProperties = new Dictionary<string, string>();
+        public Dictionary<string, string> DBPartProperties
+        {
+            get { return dBPartProperties; }
+            set
+            {
+                dBPartProperties = value;
+                OnPropertyChanged("DBPartProperties");
+            }
+        }
+
+        private string dBPartDescription;
+        public string DBPartDescription
+        {
+            get
+            {
+                return dBPartDescription;
+            }
+            set
+            {
+                dBPartDescription = value;
+                OnPropertyChanged("DBPartDescription");
+            }
+        }
+
+        private BitmapImage dBPartImage;
+        public BitmapImage DBPartImage
+        {
+            get { return dBPartImage; }
+            set
+            {
+                dBPartImage = value;
+                OnPropertyChanged("DBPartImage");
+            }
+        }
+
+        private string dBPartSearchText;
+        public string DBPartSearchText
+        {
+            get
+            {
+                return dBPartSearchText;
+            }
+            set
+            {
+                dBPartSearchText = value;
+                OnPropertyChanged("DBPartSearchText");
+                if (dBPartSearchText == "")
+                    FilteredDBParts = new ObservableCollection<Part>(DBParts);
+                else
+                    FilteredDBParts = new ObservableCollection<Part>(DBParts.Where(x => x.Name.Contains(dBPartSearchText)));
+            }
+        }
+
+        //команда "обновить список деталей"
+        private SimpleCommand cmdRefreshDBParts;
+        public SimpleCommand СmdRefreshDBParts
+        {
+            get
+            {
+                return cmdRefreshDBParts ??
+                    (cmdRefreshDBParts = new SimpleCommand(obj =>refreshDBParts()));
+            }
+        }
+
+        //команда "удалить деталь"
+        private SimpleCommand сmdDeleteDBPart;
+        public SimpleCommand CmdDeleteDBPart
+        {
+            get
+            {
+                return сmdDeleteDBPart ??
+                    (сmdDeleteDBPart = new SimpleCommand(obj => deleteDBPart(selectedDBPart),
+                    (obj)=> obj!=null));
+            }
+        }
+        
+        private async void deleteDBPart(Part selectedPart)
+        {
+            try
+            {
+                db.Parts.Remove(selectedDBPart);
+                DBParts.Remove(selectedPart);
+                FilteredDBParts.Remove(selectedPart);
+                await db.SaveChangesAsync();
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show("При попытке удалить деталь возникла ошибка");
+            }
+        }
+
+        private async void loadDBParts()
+        {
+            //await Task.Run(() =>
+            //{
+            try
+            {
+                await db.Parts.LoadAsync();
+                //await db.PartFeatures.LoadAsync();
+                //await db.Part_partfeatures.LoadAsync();
+                DBParts = db.Parts.Local.ToBindingList();
+                if (string.IsNullOrEmpty(dBPartSearchText))
+                    FilteredDBParts = new ObservableCollection<Part>(DBParts);
+                else
+                    FilteredDBParts = new ObservableCollection<Part>(DBParts.Where(x => x.Name.Contains(dBPartSearchText)));
+                DBPartProperties = null;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"{ex.Message}\nОшибка при подключении к БД. Работа с базой деталей будет не доступна.");//"При попытке подключиться к БД возникла ошибка.");
+            }
+            //});
+        }
+
+        private async void refreshDBParts()
+        {
+            await db.Parts.LoadAsync();
+            DBParts = db.Parts.Local.ToBindingList();
+            if (string.IsNullOrEmpty(dBPartSearchText))
+                FilteredDBParts = new ObservableCollection<Part>(DBParts);
+            else
+                FilteredDBParts = new ObservableCollection<Part>(DBParts.Where(x => x.Name.Contains(dBPartSearchText)));
+            DBPartProperties = null;
+            DBPartDescription = "";
+            DBPartImage = null;
+        }
+
+        private async void refreshDBPartInfo(Part currentPart)
+        {
+            if (selectedDBPart.Part_PartFeatures == null)
+                return;
+            Dictionary<string, string> properties = new Dictionary<string, string>();
+            DBPartImage = await ByteArray_2_BitmapImage(currentPart.Image);
+            await Task.Run(() => {
+                foreach (Part_PartFeature ppf in currentPart.Part_PartFeatures)
+                {
+                    properties.Add(ppf?.PartFeature?.Name, ppf?.FeatureValue);
+                }
+            });
+            DBPartProperties = properties;
+        }
+
+
+        /*==========================================*/
+        /*==========================================*/
+        /*ПЕРЕМЕННЫЕ ДЛЯ TabItem "АНАЛИЗ СБОРКИ"*/
+        private string filePath;
 
         private ObservableCollection<PartViewModel> assemblyParts { get; set; } = new ObservableCollection<PartViewModel>();
 
@@ -64,28 +271,6 @@ namespace assemblyAnalyze
             {
                 filteredAssemblyParts = value;
                 OnPropertyChanged("FilteredAssemblyParts");
-            }
-        }
-
-        private bool openedTabItemAssembly ;
-        public bool OpenedTabItemAssembly
-        {
-            get { return openedTabItemAssembly; }
-            set
-            {
-                openedTabItemAssembly = value;
-                OnPropertyChanged("OpenedTabItemAssembly");
-            }
-        }
-
-        private bool openedTabItemDB = true;
-        public bool  OpenedTabItemDB
-        {
-            get { return openedTabItemDB; }
-            set
-            {
-                openedTabItemDB = value;
-                OnPropertyChanged("OpenedTabItemDB");
             }
         }
 
@@ -157,10 +342,6 @@ namespace assemblyAnalyze
             }
         }
 
-        ~AnalyzerViewModel()
-        {
-        }
-
         //команда "открыть сборку"
         private SimpleCommand cmdOpenAssembly;
         public SimpleCommand CmdOpenAssembly
@@ -170,11 +351,10 @@ namespace assemblyAnalyze
                 return cmdOpenAssembly ??
                     (cmdOpenAssembly = new SimpleCommand(obj =>
                     {
-                        if(!OpenedTabItemAssembly)
-                            OpenedTabItemAssembly = true; //открываем TabItem для анализа сборки
                         if (dsOpenFile.OpenFileDialog("Assembly files|*.iam"))
                         {
-                            PartViewModel temp = SelectedAssemblyPart;
+                            if (!OpenedTabItemAssembly)
+                                OpenedTabItemAssembly = true; //открываем TabItem для анализа сборки
                             filePath = dsOpenFile.FilePath;
                             assemblyAnalyzer.OpenAssembly(filePath);
                             assemblyParts.Clear();
@@ -183,7 +363,7 @@ namespace assemblyAnalyze
                                 assemblyParts.Add(new PartViewModel(part));
                             }
                             FilteredAssemblyParts = assemblyParts;
-                            if(assemblyPartSearchText!="" && assemblyPartSearchText!=null)
+                            if(!string.IsNullOrEmpty(assemblyPartSearchText))
                                 FilteredAssemblyParts = new ObservableCollection<PartViewModel>(assemblyParts.Where(x => x.Name.ToLower().Contains(assemblyPartSearchText.ToLower())));
                             AssemblyPartProps = null;
                         }
@@ -193,13 +373,13 @@ namespace assemblyAnalyze
         }
 
         //команда "сохранить деталь"
-        private OpenDialogWindowCommand cmdSaveAssemblyPart;
-        public OpenDialogWindowCommand CmdSaveAssemblyPart
+        private OpenDialogWindowCommand<SavePartViewModel> cmdSaveAssemblyPart;
+        public OpenDialogWindowCommand<SavePartViewModel> CmdSaveAssemblyPart
         {
             get
             {
                 return cmdSaveAssemblyPart ??
-                    (cmdSaveAssemblyPart = new OpenDialogWindowCommand(this,
+                    (cmdSaveAssemblyPart = new OpenDialogWindowCommand<SavePartViewModel>(
                     (obj) =>
                     {
                         SavePartViewModel savePartVM = obj as SavePartViewModel;
@@ -220,6 +400,7 @@ namespace assemblyAnalyze
                     ));
             }
         }
+
         
         private byte[] BitmapSource_2_ByteArray(BitmapSource bitmap)
         {
@@ -235,6 +416,27 @@ namespace assemblyAnalyze
                 stream.Close();
             }
             return bit;
+        }
+
+        private async Task <BitmapImage> ByteArray_2_BitmapImage(byte[] imageData)
+        {
+            return await Task.Run( () =>
+            {
+                if (imageData == null || imageData.Length == 0) return null;
+                var image = new BitmapImage();
+                using (var mem = new MemoryStream(imageData))
+                {
+                    mem.Position = 0;
+                    image.BeginInit();
+                    image.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
+                    image.CacheOption = BitmapCacheOption.OnLoad;
+                    image.UriSource = null;
+                    image.StreamSource = mem;
+                    image.EndInit();
+                }
+                image.Freeze();
+                return image;
+            });
         }
 
         private BitmapSource IPictureDisp_2_BitmapSource(stdole.IPictureDisp pictureDisp)
@@ -272,13 +474,15 @@ namespace assemblyAnalyze
         private async void saveAssemblyPartInDB(PartViewModel part, string description)
         {
             stdole.IPictureDisp disp = part.PartDocument.Thumbnail;
-            part.IsSaved = true;
-            await Task.Run(()=>
+            byte[] ar = null;
+            Part newPart = null;
+            List<Part_PartFeature> part_PartFeatures = new List<Part_PartFeature>();
+            try
             {
-                try
+                await Task.Run(async () =>
                 {
-                    byte[] ar = BitmapSource_2_ByteArray(IPictureDisp_2_BitmapSource(disp));
-                    Part newPart = new Part(part.PartDocument.DisplayName,
+                    ar = BitmapSource_2_ByteArray(IPictureDisp_2_BitmapSource(disp));
+                    newPart = new Part(part.PartDocument.DisplayName,
                                             DateTime.Now.ToString(),
                                             part.PartDocument.InternalName,
                                             part.PartDocument.RevisionId,
@@ -286,12 +490,13 @@ namespace assemblyAnalyze
                                             part.PartDocument.ComponentDefinition.ModelGeometryVersion,
                                             ar,
                                             description);
+               
 
-                    List<Part_PartFeature> part_PartFeatures = new List<Part_PartFeature>();
-                    for(int i =0; i < part.Properties.Count; i++)
+                
+                    for (int i = 0; i < part.Properties.Count; i++)
                     {
                         string key = part.Properties.ElementAt(i).Key;
-                        assemblyAnalyzer.models.PartFeature partFeature = db.PartFeatures.FirstOrDefault(x => x.Name == key);
+                        assemblyAnalyzer.models.PartFeature partFeature = await  db.PartFeatures.FirstOrDefaultAsync(x => x.Name == key);
                         if (partFeature == null)
                         {
                             partFeature = db.PartFeatures.Add(new assemblyAnalyzer.models.PartFeature(part.Properties.ElementAt(i).Key));
@@ -300,28 +505,38 @@ namespace assemblyAnalyze
                         part_PartFeature.PartFeature = partFeature;
                         part_PartFeature.Part = newPart;
                         part_PartFeature.FeatureValue = part.Properties.ElementAt(i).Value;
-                        part_PartFeatures.Add( part_PartFeature);
+                        part_PartFeatures.Add(part_PartFeature);
                     }
-                    db.Parts.Add(newPart);
-                    db.Part_partfeatures.AddRange(part_PartFeatures);
-                    db.SaveChanges();
-                }
-                catch (DbUpdateException ex)
+                });
+                //await db.SaveChangesAsync();
+                
+                db.Parts.Add(newPart);
+                db.Part_partfeatures.AddRange(part_PartFeatures);
+                await db.SaveChangesAsync();
+                part.IsSaved = true;
+            }
+            catch (DbUpdateException ex)
+            {
+                //
+                Part findedPart = await  db.Parts.FirstOrDefaultAsync(p => p.InternalName == part.PartDocument.InternalName && p.RevisionId == part.PartDocument.RevisionId);
+                if (findedPart != null)
                 {
-                    Part findedPart = db.Parts.FirstOrDefault(p => p.InternalName == part.PartDocument.InternalName && p.RevisionId == part.PartDocument.RevisionId);
-                    if (findedPart != null)
-                        FileDialogService.ShowMessage($"Данная деталь уже сохранена под именем {findedPart.Name}, с описанием\n{findedPart.Description}.");
-                    else
-                        FileDialogService.ShowMessage($"Ошибка при сохранении детали. Деталь не сохранена.");
-                    part.IsSaved = false;
+                    DBParts.Remove(newPart);
+                    MessageBox.Show($"Данная деталь уже сохранена под именем \"{findedPart.Name}\", с описанием\n\"{findedPart.Description}\".");
                 }
-                catch (Exception ex)
+                else
                 {
-                    FileDialogService.ShowMessage($"Неизвестная ошибка при сохранении в детали. Деталь не сохранена.");
-                    part.IsSaved = false;
-                    //throw new Exception($"{ex.Message+"\n"}Ошибка при сохранении в БД.");
+                    MessageBox.Show($"{ex.InnerException.InnerException.Message}\nОшибка при сохранении детали. Деталь не сохранена.");
                 }
-            });
+                part.IsSaved = false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Неизвестная ошибка при сохранении в детали.");
+                part.IsSaved = false;
+                //throw new Exception($"{ex.Message+"\n"}Ошибка при сохранении в БД.");
+            }
+
         }
     }
 }

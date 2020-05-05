@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Data.Entity;
 using assemblyAnalyzer.models;
 
 namespace assemblyAnalyzer
@@ -12,6 +12,7 @@ namespace assemblyAnalyzer
     {
         public DataContext() : base("DefaultConnection")
         {
+            //Database.SetInitializer<DataContext>(new DropCreateDatabaseIfModelChanges<DataContext>());
         }
         public DbSet<Part> Parts { get; set; }
         public DbSet<PartFeature> PartFeatures { get; set; }

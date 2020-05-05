@@ -8,16 +8,19 @@
         Title="Описание детали" FontSize="12" 
         Height="200" MaxHeight="200" MinHeight="200" Width="330" MinWidth="330" MaxWidth="330">
         <StackPanel  Orientation="Vertical" Margin="2">
-        <TextBox MinHeight="110" Text="{Binding PartDescription, UpdateSourceTrigger=PropertyChanged}"
+        <TextBox Name="partDescription" MinHeight="110" Text="{Binding PartDescription, UpdateSourceTrigger=PropertyChanged}"
                      MaxLength="150" TextWrapping="Wrap" Width="300" MinWidth="300" MaxWidth="300">
             </TextBox>
         <TextBlock Foreground="Red"  Visibility="Visible" Text="{Binding AlertMessage}" Margin="2"></TextBlock>
             <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft"
                         Height="auto">
-            <Button Margin="0 2 2 2" Padding="3" 
-                    Command="{Binding CmdSavePart}" CommandParameter="{Binding PartDescription}" Click="Button_Click_1"
-                    >Сохранить</Button>
-            <Button Margin="2" Padding="2" Command="{Binding CmdCancelSave}" Click="Button_Click">Отмена</Button>
+            <Button Margin="0 2 2 2" Padding="3" IsDefault="True"
+            Command="{Binding CmdSavePart}" CommandParameter="{Binding PartDescription}" Click="Button_Click_1">
+                Сохранить
+            </Button>
+            <Button IsCancel="True" Margin="2" Padding="2" Click="Button_Click">
+                Отмена
+            </Button>
             </StackPanel>
         </StackPanel>
     

@@ -66,24 +66,21 @@ namespace assemblyAnalyzer
         }
     }
 
-    public class OpenDialogWindowCommand: MyCommand
+    public class OpenDialogWindowCommand <T>: MyCommand where T:new()
     {
-        AnalyzerViewModel mainViewModel;
-
-        public OpenDialogWindowCommand(AnalyzerViewModel mainVM, Action<object> execute, Func<object, bool> canExecute = null) : base (execute, canExecute)
+        public T ViewModel;
+        public OpenDialogWindowCommand(Action<object> execute, Func<object, bool> canExecute = null) : base (execute, canExecute) 
         {
-            mainViewModel = mainVM;
         }
 
         public override async void Execute(object parameter)
         {
             var displayRootRegistry = (Application.Current as App).displayRootRegistry;
-
-            var savePartViewModel = new SavePartViewModel();
+            ViewModel = new T();
             //await Task.Run(() => displayRootRegistry.ShowPresentation(savePartViewModel));
-            await displayRootRegistry.ShowModalPresentation(savePartViewModel);
+            await displayRootRegistry.ShowModalPresentation(ViewModel);
             
-            this.execute(savePartViewModel);
+            this.execute(ViewModel);
         }
     }
 }
