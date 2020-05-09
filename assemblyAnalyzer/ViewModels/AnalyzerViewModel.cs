@@ -174,19 +174,7 @@ namespace assemblyAnalyze
             }
         }
 
-        //команда "удалить деталь"
-       // private SimpleCommand сmdDeleteDBPart;
-       // public SimpleCommand CmdDeleteDBPart
-       // {
-       //     get
-       //     {
-       //         return сmdDeleteDBPart ??
-       //             (сmdDeleteDBPart = new SimpleCommand(obj => deleteDBPart(selectedDBPart),
-       //             (obj)=> obj!=null));
-       //     }
-       // }
-
-        //команда "сохранить деталь"
+        //команда "удалить деталь из БД"
         private OpenDialogWindowCommand<ConfirmActionViewModel> сmdDeleteDBPart;
         public OpenDialogWindowCommand<ConfirmActionViewModel> CmdDeleteDBPart
         {
@@ -205,7 +193,9 @@ namespace assemblyAnalyze
                             }
                         }
                         else throw new Exception("Внутренняя ошибка при передаче данных между окнами.");
-                    }, (obj) => obj != null));
+                    }, 
+                    (obj) => obj != null,
+                    "Вы действительно хотите удалить данную деталь?"));
             }
         }
 
@@ -220,7 +210,7 @@ namespace assemblyAnalyze
             }
             catch(Exception ex)
             {
-                MessageBox.Show("При попытке удалить деталь возникла ошибка");
+                MessageBox.Show("При попытке удалить деталь возникла ошибка. Деталь не была удалена.");
             }
         }
 
