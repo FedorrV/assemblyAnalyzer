@@ -16,6 +16,7 @@ using System.Windows;
 using System.Threading.Tasks;
 using System.IO;
 using System.Data.Entity.Infrastructure;
+using Application = System.Windows.Application;
 
 namespace assemblyAnalyze
 {
@@ -189,7 +190,7 @@ namespace assemblyAnalyze
                         {
                             if (savePartVM.IsConfirmed)
                             {
-                                deleteDBPart(selectedDBPart);
+                                removeDBPart(selectedDBPart);
                             }
                         }
                         else throw new Exception("Внутренняя ошибка при передаче данных между окнами.");
@@ -199,11 +200,11 @@ namespace assemblyAnalyze
             }
         }
 
-        private async void deleteDBPart(Part selectedPart)
+        private async void removeDBPart(Part selectedPart)
         {
             try
             {
-                db.Parts.Remove(selectedDBPart);
+                db.Parts.Remove(selectedPart);
                 DBParts.Remove(selectedPart);
                 FilteredDBParts.Remove(selectedPart);
                 await db.SaveChangesAsync();
@@ -227,7 +228,7 @@ namespace assemblyAnalyze
                 if (string.IsNullOrEmpty(dBPartSearchText))
                     FilteredDBParts = new ObservableCollection<Part>(DBParts);
                 else
-                    FilteredDBParts = new ObservableCollection<Part>(DBParts.Where(x => x.Name.Contains(dBPartSearchText)));
+                    FilteredDBParts = new ObservableCollection<Part>(DBParts.Where(x => x.Name.ToLower().Contains(dBPartSearchText.ToLower())));
                 DBPartProperties = null;
             }
             catch (Exception ex)
@@ -244,7 +245,7 @@ namespace assemblyAnalyze
             if (string.IsNullOrEmpty(dBPartSearchText))
                 FilteredDBParts = new ObservableCollection<Part>(DBParts);
             else
-                FilteredDBParts = new ObservableCollection<Part>(DBParts.Where(x => x.Name.Contains(dBPartSearchText)));
+                FilteredDBParts = new ObservableCollection<Part>(DBParts.Where(x => x.Name.ToLower().Contains(dBPartSearchText.ToLower())));
             DBPartProperties = null;
             DBPartDescription = "";
             DBPartImage = null;
@@ -501,9 +502,27 @@ namespace assemblyAnalyze
             byte[] ar = null;
             Part newPart = null;
             List<Part_PartFeature> part_PartFeatures = new List<Part_PartFeature>();
+            ConfirmActionViewModel ViewModel = null;
+            List<Part> findedPart = null; 
+
             try
             {
-                await Task.Run(async () =>
+                findedPart = new List<Part>(db.Parts.Where(p => p.InternalName == part.InternalName)); 
+                if (findedPart.Count() == 1)
+                {
+                    ViewModel = new ConfirmActionViewModel($"В базе деталей уже содержится данная деталь под именем {findedPart[0].Name}. Перезаписать данную деталь?");
+                    var displayRootRegistry = (Application.Current as App).displayRootRegistry;
+                    await displayRootRegistry.ShowModalPresentation(ViewModel);
+                }
+
+                part.IsSaved = true;
+
+                if (ViewModel != null && ViewModel.IsConfirmed)
+                {
+                    removeDBPart(findedPart[0]);
+                }
+
+                await Task.Run(() =>
                 {
                     ar = BitmapSource_2_ByteArray(IPictureDisp_2_BitmapSource(disp));
                     newPart = new Part(part.Name,
@@ -515,12 +534,10 @@ namespace assemblyAnalyze
                                             ar,
                                             description);
                
-
-                
                     for (int i = 0; i < part.Properties.Count; i++)
                     {
                         string key = part.Properties.ElementAt(i).Key;
-                        assemblyAnalyzer.models.PartFeature partFeature = await  db.PartFeatures.FirstOrDefaultAsync(x => x.Name == key);
+                        assemblyAnalyzer.models.PartFeature partFeature =   db.PartFeatures.FirstOrDefault(x => x.Name == key);
                         if (partFeature == null)
                         {
                             partFeature = db.PartFeatures.Add(new assemblyAnalyzer.models.PartFeature(part.Properties.ElementAt(i).Key));
@@ -532,26 +549,14 @@ namespace assemblyAnalyze
                         part_PartFeatures.Add(part_PartFeature);
                     }
                 });
-                //await db.SaveChangesAsync();
                 
                 db.Parts.Add(newPart);
                 db.Part_partfeatures.AddRange(part_PartFeatures);
                 await db.SaveChangesAsync();
-                part.IsSaved = true;
             }
             catch (DbUpdateException ex)
             {
-                //
-                Part findedPart = await  db.Parts.FirstOrDefaultAsync(p => p.InternalName == part.InternalName && p.RevisionId == part.RevisionId);
-                if (findedPart != null)
-                {
-                    DBParts.Remove(newPart);
-                    MessageBox.Show($"Данная деталь уже сохранена под именем \"{findedPart.Name}\", с описанием\n\"{findedPart.Description}\".");
-                }
-                else
-                {
-                    MessageBox.Show($"{ex.InnerException.InnerException.Message}\nОшибка при сохранении детали. Деталь не сохранена.");
-                }
+                MessageBox.Show($"{ex.InnerException.InnerException.Message}\nОшибка при сохранении детали. Деталь не сохранена.");
                 part.IsSaved = false;
             }
             catch (Exception ex)
