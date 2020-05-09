@@ -11,10 +11,27 @@ namespace assemblyAnalyze.ViewModels
     {
         public bool IsConfirmed;
 
+        public ConfirmActionViewModel(object questionText)
+        {
+            this.QuestionText = questionText as string;
+        }
+
         public ConfirmActionViewModel()
         {
             IsConfirmed = false;
         }
+
+        private string questionText;
+        public string QuestionText
+        {
+            get { return questionText; }
+            set
+            {
+                questionText = value;
+                OnPropertyChanged("QuestionText");
+            }
+        }
+
 
         private SimpleCommand cmdConfirmAction;
         public SimpleCommand CmdConfirmAction

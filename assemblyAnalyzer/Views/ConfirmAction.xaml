@@ -8,9 +8,8 @@
         Title="Подтверждение действия" FontSize="13" 
         Height="200" MaxHeight="130" MinHeight="130" Width="330" MinWidth="330" MaxWidth="330">
     <StackPanel  Orientation="Vertical" Margin="8 4 8 4">
-        <TextBlock MinHeight="50" TextWrapping="Wrap" Width="300" MinWidth="300" MaxWidth="300">
-            Вы действительно хотите выполнить данное действие?
-        </TextBlock>
+        <TextBlock MinHeight="50" TextWrapping="Wrap" Width="300" MinWidth="300" MaxWidth="300"
+        Text="{Binding QuestionText, UpdateSourceTrigger=PropertyChanged}"></TextBlock>
         <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft"
                         Height="auto">
             <Button Margin="0 2 2 2" Padding="3"  Width="70" Click="Button_Click_1">
