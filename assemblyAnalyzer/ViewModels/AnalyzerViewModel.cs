@@ -306,9 +306,7 @@ namespace assemblyAnalyze
                 }
                 else
                 {
-                    updateAssemblyPartPhoto(selectedAssemblyPart.PartDocument.Thumbnail);
-                    if (selectedAssemblyPart.Properties == null)
-                        selectedAssemblyPart.Properties = AssemblyAnalyzer.getPartProperties(selectedAssemblyPart.PartDocument);
+                    updateAssemblyPartPhoto(selectedAssemblyPart.Image);
                     AssemblyPartProps = selectedAssemblyPart.Properties;
                 }
             }
@@ -372,17 +370,25 @@ namespace assemblyAnalyze
                         {
                             if (!OpenedTabItemAssembly)
                                 OpenedTabItemAssembly = true; //открываем TabItem для анализа сборки
+                            assemblyAnalyzer = new AssemblyAnalyzer();
                             filePath = dsOpenFile.FilePath;
                             assemblyAnalyzer.OpenAssembly(filePath);
                             assemblyParts.Clear();
                             foreach(ApprenticeServerDocument part in assemblyAnalyzer.Parts)
                             {
-                                assemblyParts.Add(new PartViewModel(part));
+                                assemblyParts.Add(new PartViewModel(part.DisplayName,
+                                                                    part.InternalName,
+                                                                    part.RevisionId,
+                                                                    part.DatabaseRevisionId,
+                                                                    part.ComponentDefinition.ModelGeometryVersion,
+                                                                    part.Thumbnail,
+                                                                    AssemblyAnalyzer.getPartProperties(part)));
                             }
                             FilteredAssemblyParts = assemblyParts;
                             if(!string.IsNullOrEmpty(assemblyPartSearchText))
                                 FilteredAssemblyParts = new ObservableCollection<PartViewModel>(assemblyParts.Where(x => x.Name.ToLower().Contains(assemblyPartSearchText.ToLower())));
                             AssemblyPartProps = null;
+                            assemblyAnalyzer = null;
                         }
                     })
                 );
@@ -491,7 +497,7 @@ namespace assemblyAnalyze
 
         private async void saveAssemblyPartInDB(PartViewModel part, string description)
         {
-            stdole.IPictureDisp disp = part.PartDocument.Thumbnail;
+            stdole.IPictureDisp disp = part.Image;
             byte[] ar = null;
             Part newPart = null;
             List<Part_PartFeature> part_PartFeatures = new List<Part_PartFeature>();
@@ -500,12 +506,12 @@ namespace assemblyAnalyze
                 await Task.Run(async () =>
                 {
                     ar = BitmapSource_2_ByteArray(IPictureDisp_2_BitmapSource(disp));
-                    newPart = new Part(part.PartDocument.DisplayName,
+                    newPart = new Part(part.Name,
                                             DateTime.Now.ToString(),
-                                            part.PartDocument.InternalName,
-                                            part.PartDocument.RevisionId,
-                                            part.PartDocument.DatabaseRevisionId,
-                                            part.PartDocument.ComponentDefinition.ModelGeometryVersion,
+                                            part.InternalName,
+                                            part.RevisionId,
+                                            part.DatabaseRevisionId,
+                                            part.ModelGeometryVersion,
                                             ar,
                                             description);
                
@@ -536,7 +542,7 @@ namespace assemblyAnalyze
             catch (DbUpdateException ex)
             {
                 //
-                Part findedPart = await  db.Parts.FirstOrDefaultAsync(p => p.InternalName == part.PartDocument.InternalName && p.RevisionId == part.PartDocument.RevisionId);
+                Part findedPart = await  db.Parts.FirstOrDefaultAsync(p => p.InternalName == part.InternalName && p.RevisionId == part.RevisionId);
                 if (findedPart != null)
                 {
                     DBParts.Remove(newPart);

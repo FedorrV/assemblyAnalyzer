@@ -25,16 +25,7 @@ namespace assemblyAnalyze
             }
         }
 
-        //private List<string> partsName = new List<string>();
-        //public List<string> PartsName
-        //{
-        //    get
-        //    {
-        //        return partsName;
-        //    }
-        //}
-
-        private List<ApprenticeServerDocument> parts = new List<ApprenticeServerDocument>();
+        private List<ApprenticeServerDocument> parts;
         public IReadOnlyList<ApprenticeServerDocument>  Parts
         {
             get
@@ -42,13 +33,6 @@ namespace assemblyAnalyze
                 return parts.AsReadOnly();
             }
         }
-
-        //private List<Dictionary<string, string>> partProperties = new List<Dictionary<string, string>>();
-        //public Dictionary<string, string> PartProperties(ApprenticeServerDocument part)
-        //{
-        //    int index = parts.FindIndex(x => x == part);
-        //    return partProperties[index];
-        //}
 
         private void startupApprenticeServer()
         {
@@ -61,7 +45,7 @@ namespace assemblyAnalyze
 
         public void OpenAssembly(string pathToFile)
         {
-            parts.Clear();
+            //parts.Clear();
             try
             {
                 assembly = aprServer.Open(pathToFile);
@@ -78,6 +62,7 @@ namespace assemblyAnalyze
 
         private void getParts()
         {
+            parts = new List<ApprenticeServerDocument>(assembly.AllReferencedDocuments.Count);
             getAllDefinitionParts(assembly);
         }
 
@@ -102,7 +87,6 @@ namespace assemblyAnalyze
                     if (copyDoc == null)// если нет такого документа, тогда добавляем
                     {
                         parts.Add(curDoc);
-                        //partsName.Add(curDoc.DisplayName);
                     }
                 }
             }
@@ -119,7 +103,6 @@ namespace assemblyAnalyze
                     if (tempDoc != null)
                     {
                         parts.RemoveAt(i);
-                        //partsName.RemoveAt(i);
                     }
                 }
             }

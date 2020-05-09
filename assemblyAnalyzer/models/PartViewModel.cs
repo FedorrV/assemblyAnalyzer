@@ -9,19 +9,30 @@ using InventorApprentice;
 
 namespace assemblyAnalyzer
 {
-    
-    public class PartViewModel: INotifyPropertyChanged
+
+    public class PartViewModel : INotifyPropertyChanged
     {
-        public PartViewModel(){}
-        public PartViewModel(ApprenticeServerDocument partDoc, bool isSaved= false )
+        public PartViewModel() { }
+        public PartViewModel(string Name, string InternalName, string RevisionId, string DatabaseRevisionId, string ModelGeometryVersion, stdole.IPictureDisp image, Dictionary<string, string> properties)
         {
-            this.PartDocument = partDoc;
-            this.IsSaved = isSaved;
+            this.IsSaved = false;
             //this.Properties = properties;
-            this.Name = partDoc.DisplayName;
+            this.name = Name;
+            this.InternalName = InternalName;
+            this.RevisionId = RevisionId;
+            this.DatabaseRevisionId = DatabaseRevisionId;
+            this.ModelGeometryVersion = ModelGeometryVersion;
+            this.Image = image;
+            this.Properties = properties;
         }
 
-        public ApprenticeServerDocument PartDocument;
+        //public ApprenticeServerDocument PartDocument;
+        public string InternalName;
+        public string RevisionId;
+        public string DatabaseRevisionId;
+        public string ModelGeometryVersion;
+
+        public stdole.IPictureDisp Image;
 
         private string name;
         public string Name
