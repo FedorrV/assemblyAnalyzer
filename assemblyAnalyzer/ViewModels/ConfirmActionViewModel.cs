@@ -10,6 +10,7 @@ namespace assemblyAnalyze.ViewModels
     public class ConfirmActionViewModel:BasicViewModel
     {
         public bool IsConfirmed;
+        public bool ExistsResult;
 
         public ConfirmActionViewModel(object questionText)
         {
@@ -19,6 +20,7 @@ namespace assemblyAnalyze.ViewModels
         public ConfirmActionViewModel()
         {
             IsConfirmed = false;
+            ExistsResult = false;
         }
 
         private string questionText;
@@ -42,6 +44,20 @@ namespace assemblyAnalyze.ViewModels
                     (cmdConfirmAction = new SimpleCommand(obj =>
                     {
                         IsConfirmed = true;
+                        ExistsResult = true;
+                    }));
+            }
+        }
+
+        private SimpleCommand cmdCancelAction;
+        public SimpleCommand CmdCancelAction
+        {
+            get
+            {
+                return cmdCancelAction ??
+                    (cmdCancelAction = new SimpleCommand(obj =>
+                    {
+                        ExistsResult = true;
                     }));
             }
         }

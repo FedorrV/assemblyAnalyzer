@@ -160,7 +160,7 @@ namespace assemblyAnalyze
                 if (dBPartSearchText == "")
                     FilteredDBParts = new ObservableCollection<Part>(DBParts);
                 else
-                    FilteredDBParts = new ObservableCollection<Part>(DBParts.Where(x => x.Name.Contains(dBPartSearchText)));
+                    FilteredDBParts = new ObservableCollection<Part>(DBParts.Where(x => x.Name.ToLower().Contains(dBPartSearchText.ToLower())));
             }
         }
 
@@ -186,14 +186,11 @@ namespace assemblyAnalyze
                     (obj) =>
                     {
                         ConfirmActionViewModel savePartVM = obj as ConfirmActionViewModel;
-                        if (savePartVM != null)
+                        if (savePartVM != null && savePartVM.ExistsResult && savePartVM.IsConfirmed)
                         {
-                            if (savePartVM.IsConfirmed)
-                            {
-                                removeDBPart(selectedDBPart);
-                            }
+                            removeDBPart(selectedDBPart);
                         }
-                        else throw new Exception("Внутренняя ошибка при передаче данных между окнами.");
+                        if (savePartVM == null) throw new Exception("Внутренняя ошибка при передаче данных между окнами.");
                     }, 
                     (obj) => obj != null,
                     "Вы действительно хотите удалить данную деталь?"));
@@ -412,18 +409,17 @@ namespace assemblyAnalyze
                         {
                             if (savePartVM.IsSaved)
                             {
-                                String partDesctiprion = savePartVM.PartDescription;
-                                saveAssemblyPartInDB(selectedAssemblyPart, partDesctiprion);
+                                saveAssemblyPartInDB(selectedAssemblyPart, savePartVM.PartName, savePartVM.PartDescription);
                             }
                         }
                         else throw new Exception("Внутренняя ошибка при передаче данных между окнами.");
                         savePartVM = null;
                     },
-                    (obj) => {
+                    (obj) => 
+                    {
                         PartViewModel temp = obj as PartViewModel;
                         return temp?.IsSaved == false;
-                    }
-                    ));
+                    }));
             }
         }
         
@@ -496,7 +492,7 @@ namespace assemblyAnalyze
             });
         }
 
-        private async void saveAssemblyPartInDB(PartViewModel part, string description)
+        private async void saveAssemblyPartInDB(PartViewModel part, string name, string description)
         {
             stdole.IPictureDisp disp = part.Image;
             byte[] ar = null;
@@ -510,29 +506,30 @@ namespace assemblyAnalyze
                 findedPart = new List<Part>(db.Parts.Where(p => p.InternalName == part.InternalName)); 
                 if (findedPart.Count() == 1)
                 {
-                    ViewModel = new ConfirmActionViewModel($"В базе деталей уже содержится данная деталь под именем {findedPart[0].Name}. Перезаписать данную деталь?");
+                    ViewModel = new ConfirmActionViewModel($"В базе деталей уже содержится данная деталь под именем \"{findedPart[0].Name}\". Перезаписать данную деталь?");
                     var displayRootRegistry = (Application.Current as App).displayRootRegistry;
                     await displayRootRegistry.ShowModalPresentation(ViewModel);
-                }
+                    //если ничего не выбрано, отменяем сохранение
+                    if (!ViewModel.ExistsResult)
+                        return;
 
+                    if (ViewModel.IsConfirmed)
+                        removeDBPart(findedPart[0]);
+                }
+               
                 part.IsSaved = true;
-
-                if (ViewModel != null && ViewModel.IsConfirmed)
-                {
-                    removeDBPart(findedPart[0]);
-                }
 
                 await Task.Run(() =>
                 {
                     ar = BitmapSource_2_ByteArray(IPictureDisp_2_BitmapSource(disp));
-                    newPart = new Part(part.Name,
+                    newPart = new Part(name.Trim(),
                                             DateTime.Now.ToString(),
                                             part.InternalName,
                                             part.RevisionId,
                                             part.DatabaseRevisionId,
                                             part.ModelGeometryVersion,
                                             ar,
-                                            description);
+                                            description.Trim());
                
                     for (int i = 0; i < part.Properties.Count; i++)
                     {
@@ -554,14 +551,10 @@ namespace assemblyAnalyze
                 db.Part_partfeatures.AddRange(part_PartFeatures);
                 await db.SaveChangesAsync();
             }
-            catch (DbUpdateException ex)
-            {
-                MessageBox.Show($"{ex.InnerException.InnerException.Message}\nОшибка при сохранении детали. Деталь не сохранена.");
-                part.IsSaved = false;
-            }
             catch (Exception ex)
             {
-                MessageBox.Show($"Неизвестная ошибка при сохранении в детали.");
+                DBParts.Remove(newPart);
+                MessageBox.Show($"Неизвестная ошибка при сохранении в детали. Деталь \"{newPart.Name}\" не была сохранена");
                 part.IsSaved = false;
                 //throw new Exception($"{ex.Message+"\n"}Ошибка при сохранении в БД.");
             }

@@ -10,7 +10,14 @@ namespace assemblyAnalyze.ViewModels
 {
     public class SavePartViewModel: BasicViewModel, INotifyPropertyChanged
     {
+        public SavePartViewModel() { }
+        public SavePartViewModel(object partName)
+        {
+            this.PartName = partName as string;
+        }
+
         public bool IsSaved = false;
+
         private string partDescription;
         public string PartDescription
         {
@@ -19,21 +26,47 @@ namespace assemblyAnalyze.ViewModels
             {
                 partDescription = value;
                 if (partDescription.Length == 150)
-                    AlertMessage = "Не более 150 символов";
+                    AlertMessageDescription = "Не более 150 символов";
                 else
-                    AlertMessage = "";
+                    AlertMessageDescription = "";
                 OnPropertyChanged("PartDescription");
             }
         }
 
-        private string alertMessage;
-        public string AlertMessage
+        private string partName;
+        public string PartName
         {
-            get { return alertMessage; }
+            get { return partName; }
             set
             {
-                alertMessage = value;
-                OnPropertyChanged("AlertMessage");
+                partName = value;
+                if (partName.Length == 50)
+                    AlertMessageName = "Не более 50 символов";
+                else
+                    AlertMessageName = "";
+                OnPropertyChanged("PartName");
+            }
+        }
+        
+        private string alertMessageDescription;
+        public string AlertMessageDescription
+        {
+            get { return alertMessageDescription; }
+            set
+            {
+                alertMessageDescription = value;
+                OnPropertyChanged("AlertMessageDescription");
+            }
+        }
+
+        private string alertMessageName;
+        public string AlertMessageName
+        {
+            get { return alertMessageName; }
+            set
+            {
+                alertMessageName = value;
+                OnPropertyChanged("AlertMessageName");
             }
         }
 
@@ -46,7 +79,7 @@ namespace assemblyAnalyze.ViewModels
                     (cmdSavePart = new SimpleCommand(obj =>
                     {
                         IsSaved = true;
-                    }, (obj)=> {return !string.IsNullOrEmpty(obj?.ToString()); }));
+                    }, (obj)=> {return !string.IsNullOrEmpty(obj?.ToString()) && !string.IsNullOrEmpty(PartName); }));
             }
         }
     }

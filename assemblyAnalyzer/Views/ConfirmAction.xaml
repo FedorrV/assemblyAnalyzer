@@ -12,10 +12,10 @@
         Text="{Binding QuestionText, UpdateSourceTrigger=PropertyChanged}"></TextBlock>
         <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft"
                         Height="auto">
-            <Button Margin="0 2 2 2" Padding="3"  Width="70" Click="Button_Click_1">
+            <Button Margin="0 2 2 2" Padding="3"  Width="70" Click="Button_Click_1" Command="{Binding CmdCancelAction}">
                 Нет
             </Button>
-            <Button  Margin="2" Padding="2" Width="70" Command="{Binding CmdConfirmAction}" Click="Button_Click">
+            <Button Name="ConfirmBTN" Margin="2" Padding="2" Width="70" Command="{Binding CmdConfirmAction}" Click="Button_Click">
                 Да
             </Button>
         </StackPanel>
