@@ -25,11 +25,9 @@ namespace assemblyAnalyzer.models
         [Column("Insert_date")]
         public string InsertDate { get; set; }
         
-        [Index("IDX_INTERNAL_REVISION", 1, IsUnique = true)]
         [Column("Internal_name")]
         public string InternalName { get; set; }
 
-        [Index("IDX_INTERNAL_REVISION", 2, IsUnique = true)]
         [Column("Revision_id")]
         public string RevisionId { get; set; }
 

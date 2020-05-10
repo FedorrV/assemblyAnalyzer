@@ -26,7 +26,6 @@ namespace assemblyAnalyze.Services
         public static void ShowMessage(string message)
         {
             MessageBox.Show(message);
-            
         }
     }
 }

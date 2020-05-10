@@ -82,11 +82,8 @@ namespace assemblyAnalyzer
                 ViewModel = (T)Activator.CreateInstance(typeof(T), ViewModelArgs);
             else
                 ViewModel = new T();
-            //await Task.Run(() => displayRootRegistry.ShowPresentation(savePartViewModel));
             await displayRootRegistry.ShowModalPresentation(ViewModel);
-            
             this.execute(ViewModel);
-            //ViewModel = default(T);
         }
     }
 }

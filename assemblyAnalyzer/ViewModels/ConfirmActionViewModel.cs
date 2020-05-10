@@ -9,8 +9,6 @@ namespace assemblyAnalyze.ViewModels
 {
     public class ConfirmActionViewModel:BasicViewModel
     {
-        public bool IsConfirmed;
-        public bool ExistsResult;
 
         public ConfirmActionViewModel(object questionText)
         {
@@ -22,6 +20,9 @@ namespace assemblyAnalyze.ViewModels
             IsConfirmed = false;
             ExistsResult = false;
         }
+
+        public bool IsConfirmed;
+        public bool ExistsResult;
 
         private string questionText;
         public string QuestionText

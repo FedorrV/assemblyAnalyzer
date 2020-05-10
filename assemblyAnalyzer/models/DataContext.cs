@@ -12,8 +12,8 @@ namespace assemblyAnalyzer
     {
         public DataContext() : base("DefaultConnection")
         {
-            //Database.SetInitializer<DataContext>(new DropCreateDatabaseIfModelChanges<DataContext>());
         }
+
         public DbSet<Part> Parts { get; set; }
         public DbSet<PartFeature> PartFeatures { get; set; }
         public DbSet<Part_PartFeature> Part_partfeatures { get; set; }

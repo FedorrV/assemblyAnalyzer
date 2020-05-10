@@ -171,7 +171,7 @@
                         <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" BorderBrush="Gray" BorderThickness="1">
                             <ToolBar  
                              Height="32px" Padding="1px,1px,1px,1px" Background="White" >
-                                <TextBox  BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Left" Style="{StaticResource searchTextBox}"
+                                <TextBox MaxLength="50"  BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Left" Style="{StaticResource searchTextBox}"
                                 Width="150" Height="25px" Margin="0,0,8,0" Text="{Binding Path=AssemblyPartSearchText, UpdateSourceTrigger=PropertyChanged}" >
                                 </TextBox>
                                 <Separator/>
@@ -230,7 +230,7 @@
                     <!--<Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">-->
                     <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" BorderBrush="Gray" BorderThickness="1">
                         <ToolBar Height="36px" Padding="1px,1px,1px,1px" Background="White" >
-                            <TextBox  BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Left" Text="{Binding DBPartSearchText, UpdateSourceTrigger=PropertyChanged}"
+                            <TextBox MaxLength="50"  BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Left" Text="{Binding DBPartSearchText, UpdateSourceTrigger=PropertyChanged}"
                             Width="150" Height="25px" Margin="0,0,8,0" Style="{StaticResource searchTextBox}"></TextBox>
                             <Separator/>
                             <Button Command="{Binding СmdRefreshDBParts}" Height="32px" Padding="4,0,4,0" Margin="8,0,0,0" ToolTip="Обновить">

@@ -17,7 +17,6 @@ namespace assemblyAnalyzer.models
         [Column("Mtm_part_partfeature_id")]
         public int Part_PartFeatureId { get; set; }
 
-        
         [Column("Partfeature_id")]
         public int PartFeatureId { get; set; }
         [ForeignKey("PartFeatureId")]

@@ -22,17 +22,13 @@ namespace assemblyAnalyze
             displayRootRegistry.RegisterWindowType<AnalyzerViewModel, MainWindow>();
             displayRootRegistry.RegisterWindowType<SavePartViewModel, SavePart>();
             displayRootRegistry.RegisterWindowType<ConfirmActionViewModel, ConfirmAction>();
-            //displayRootRegistry.RegisterWindowType<DialogWindowViewModel, DialogWindow>();
         }
 
         protected override async void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-
             mainWindowViewModel = new AnalyzerViewModel();
-
             await displayRootRegistry.ShowModalPresentation(mainWindowViewModel);
-
             Shutdown();
         }
     }

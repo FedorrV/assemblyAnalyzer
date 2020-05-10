@@ -24,11 +24,11 @@ namespace assemblyAnalyze
     {
         public AnalyzerViewModel()
         {
-            //при старте открытая вкладка это "База деталей"
+            //при старте делаем открытой вкладку "База деталей"
             openedTabItemAssembly = false;
             openedTabItemDB = true;
             
-            assemblyParts = new ObservableCollection<PartViewModel>();
+            assemblyParts = new ObservableCollection<AssemblyPart>();
 
             try
             {
@@ -44,7 +44,6 @@ namespace assemblyAnalyze
         }
 
         private AssemblyAnalyzer assemblyAnalyzer; //анализатор сборок
-        ///private ApprenticeServerDocument activeAssembly;
         private FileDialogService dsOpenFile = new FileDialogService();
         private DataContext db;
 
@@ -70,7 +69,8 @@ namespace assemblyAnalyze
             }
         }
 
-        /*---------------*/
+        /*-----------------------------------------------------*/
+        /*-----------------------------------------------------*/
         /*ПЕРЕМЕННЫЕ ДЛЯ TabItem "БАЗА ДЕТАЛЕЙ"*/
         public ICollection<Part> DBParts;
 
@@ -214,8 +214,6 @@ namespace assemblyAnalyze
 
         private async void loadDBParts()
         {
-            //await Task.Run(() =>
-            //{
             try
             {
                 await db.Parts.LoadAsync();
@@ -230,9 +228,8 @@ namespace assemblyAnalyze
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"{ex.Message}\nОшибка при подключении к БД. Работа с базой деталей будет не доступна.");//"При попытке подключиться к БД возникла ошибка.");
+                MessageBox.Show($"{ex.Message}\nОшибка при подключении к БД. Работа с базой деталей не доступна.");
             }
-            //});
         }
 
         private async void refreshDBParts()
@@ -267,16 +264,15 @@ namespace assemblyAnalyze
             DBPartProperties = properties;
         }
 
-
         /*==========================================*/
         /*==========================================*/
         /*ПЕРЕМЕННЫЕ ДЛЯ TabItem "АНАЛИЗ СБОРКИ"*/
         private string filePath;
 
-        private ObservableCollection<PartViewModel> assemblyParts { get; set; } = new ObservableCollection<PartViewModel>();
+        private ObservableCollection<AssemblyPart> assemblyParts { get; set; } = new ObservableCollection<AssemblyPart>();
 
-        private ObservableCollection<PartViewModel> filteredAssemblyParts = new ObservableCollection<PartViewModel>();
-        public ObservableCollection<PartViewModel> FilteredAssemblyParts
+        private ObservableCollection<AssemblyPart> filteredAssemblyParts = new ObservableCollection<AssemblyPart>();
+        public ObservableCollection<AssemblyPart> FilteredAssemblyParts
         {
             get
             {
@@ -289,8 +285,8 @@ namespace assemblyAnalyze
             }
         }
 
-        private PartViewModel selectedAssemblyPart;
-        public PartViewModel SelectedAssemblyPart
+        private AssemblyPart selectedAssemblyPart;
+        public AssemblyPart SelectedAssemblyPart
         {
             get { return selectedAssemblyPart; }
             set
@@ -335,9 +331,7 @@ namespace assemblyAnalyze
                 if (assemblyPartSearchText == "")
                     FilteredAssemblyParts = assemblyParts;
                 else
-                    FilteredAssemblyParts = new ObservableCollection<PartViewModel>(assemblyParts.Where(x => x.Name.ToLower().Contains(assemblyPartSearchText.ToLower())));
-                //if (FilteredDGParts.Count != DGParts.Count)
-                    //DGProperties = null;
+                    FilteredAssemblyParts = new ObservableCollection<AssemblyPart>(assemblyParts.Where(x => x.Name.ToLower().Contains(assemblyPartSearchText.ToLower())));
             }
         }
 
@@ -374,7 +368,7 @@ namespace assemblyAnalyze
                             assemblyParts.Clear();
                             foreach(ApprenticeServerDocument part in assemblyAnalyzer.Parts)
                             {
-                                assemblyParts.Add(new PartViewModel(part.DisplayName,
+                                assemblyParts.Add(new AssemblyPart(part.DisplayName,
                                                                     part.InternalName,
                                                                     part.RevisionId,
                                                                     part.DatabaseRevisionId,
@@ -384,7 +378,7 @@ namespace assemblyAnalyze
                             }
                             FilteredAssemblyParts = assemblyParts;
                             if(!string.IsNullOrEmpty(assemblyPartSearchText))
-                                FilteredAssemblyParts = new ObservableCollection<PartViewModel>(assemblyParts.Where(x => x.Name.ToLower().Contains(assemblyPartSearchText.ToLower())));
+                                FilteredAssemblyParts = new ObservableCollection<AssemblyPart>(assemblyParts.Where(x => x.Name.ToLower().Contains(assemblyPartSearchText.ToLower())));
                             AssemblyPartProps = null;
                             assemblyAnalyzer = null;
                         }
@@ -417,7 +411,7 @@ namespace assemblyAnalyze
                     },
                     (obj) => 
                     {
-                        PartViewModel temp = obj as PartViewModel;
+                        AssemblyPart temp = obj as AssemblyPart;
                         return temp?.IsSaved == false;
                     }));
             }
@@ -492,7 +486,7 @@ namespace assemblyAnalyze
             });
         }
 
-        private async void saveAssemblyPartInDB(PartViewModel part, string name, string description)
+        private async void saveAssemblyPartInDB(AssemblyPart part, string name, string description)
         {
             stdole.IPictureDisp disp = part.Image;
             byte[] ar = null;
@@ -558,7 +552,6 @@ namespace assemblyAnalyze
                 part.IsSaved = false;
                 //throw new Exception($"{ex.Message+"\n"}Ошибка при сохранении в БД.");
             }
-
         }
     }
 }

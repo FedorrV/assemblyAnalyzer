@@ -11,6 +11,7 @@ namespace assemblyAnalyze.ViewModels
     public class SavePartViewModel: BasicViewModel, INotifyPropertyChanged
     {
         public SavePartViewModel() { }
+
         public SavePartViewModel(object partName)
         {
             this.PartName = partName as string;

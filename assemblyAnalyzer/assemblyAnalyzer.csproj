@@ -124,7 +124,7 @@
     <Compile Include="models\Dct_partfeature.cs" />
     <Compile Include="models\Mtm_part_partfeature.cs" />
     <Compile Include="models\Part.cs" />
-    <Compile Include="models\PartViewModel.cs" />
+    <Compile Include="models\AssemblyPart.cs" />
     <Compile Include="ViewModels\BasicViewModel.cs" />
     <Compile Include="ViewModels\SavePartViewModel.cs" />
     <Compile Include="Services\MyCommand.cs" />

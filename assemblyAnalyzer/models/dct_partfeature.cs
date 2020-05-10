@@ -13,21 +13,18 @@ namespace assemblyAnalyzer.models
     [Table("Dct_partfeatures")]
     public class PartFeature
     {
+        public PartFeature() { }
+
+        public PartFeature(string Name)
+        {
+            this.Name = Name;
+        }
+
         [Key]
         [Column("Dct_partfeature_id")]
         public int PartFeatureId { get; set; }
 
         [Column("Name")]
         public string Name { get; set; }
-
-        public PartFeature()
-        {
-
-        }
-
-        public PartFeature(string Name)
-        {
-            this.Name = Name;
-        }
     }
 }
