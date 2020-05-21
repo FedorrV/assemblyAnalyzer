@@ -56,11 +56,11 @@ namespace assemblyAnalyze
             {
                 throw new Exception("Ошибка при попытке открыть файл. Файл сборки повреждён или был создан в более поздней версии Inventor.");
             }
-            getParts();
+            getAssemblyParts();
         }
 
 
-        private void getParts()
+        private void getAssemblyParts()
         {
             parts = new List<ApprenticeServerDocument>(assembly.AllReferencedDocuments.Count);
             getAllDefinitionParts(assembly);

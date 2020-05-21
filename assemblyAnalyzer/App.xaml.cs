@@ -14,12 +14,12 @@ namespace assemblyAnalyze
     /// </summary>
     public partial class App : Application
     {
-        public DisplayRootRegistry displayRootRegistry = new DisplayRootRegistry();
-        AnalyzerViewModel mainWindowViewModel;
+        public DisplayRegister displayRootRegistry = new DisplayRegister();
+        MainViewModel mainWindowViewModel;
 
         public App()
         {
-            displayRootRegistry.RegisterWindowType<AnalyzerViewModel, MainWindow>();
+            displayRootRegistry.RegisterWindowType<MainViewModel, MainWindow>();
             displayRootRegistry.RegisterWindowType<SavePartViewModel, SavePart>();
             displayRootRegistry.RegisterWindowType<ConfirmActionViewModel, ConfirmAction>();
         }
@@ -27,7 +27,7 @@ namespace assemblyAnalyze
         protected override async void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-            mainWindowViewModel = new AnalyzerViewModel();
+            mainWindowViewModel = new MainViewModel();
             await displayRootRegistry.ShowModalPresentation(mainWindowViewModel);
             Shutdown();
         }

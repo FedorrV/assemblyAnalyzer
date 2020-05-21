@@ -17,12 +17,13 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Data.Entity.Infrastructure;
 using Application = System.Windows.Application;
+using System.Data.Entity.Core;
 
 namespace assemblyAnalyze
 {
-    public class AnalyzerViewModel : BasicViewModel,INotifyPropertyChanged 
+    public class MainViewModel : BasicViewModel,INotifyPropertyChanged 
     {
-        public AnalyzerViewModel()
+        public MainViewModel()
         {
             //при старте делаем открытой вкладку "База деталей"
             openedTabItemAssembly = false;
@@ -104,7 +105,6 @@ namespace assemblyAnalyze
                 }
                 else
                 {
-                    DBPartDescription = selectedDBPart.Description;
                     refreshDBPartInfo(selectedDBPart);
                 }
             }
@@ -206,7 +206,11 @@ namespace assemblyAnalyze
                 FilteredDBParts.Remove(selectedPart);
                 await db.SaveChangesAsync();
             }
-            catch(Exception ex)
+            catch (EntityCommandExecutionException ex)
+            {
+                MessageBox.Show("Ошибка при подключении к БД. Работа с базой деталей не доступна.");
+            }
+            catch (Exception ex)
             {
                 MessageBox.Show("При попытке удалить деталь возникла ошибка. Деталь не была удалена.");
             }
@@ -217,7 +221,7 @@ namespace assemblyAnalyze
             try
             {
                 await db.Parts.LoadAsync();
-                //await db.PartFeatures.LoadAsync();
+                await db.PartFeatures.LoadAsync();
                 //await db.Part_partfeatures.LoadAsync();
                 DBParts = db.Parts.Local.ToBindingList();
                 if (string.IsNullOrEmpty(dBPartSearchText))
@@ -228,29 +232,43 @@ namespace assemblyAnalyze
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"{ex.Message}\nОшибка при подключении к БД. Работа с базой деталей не доступна.");
+                MessageBox.Show($"Ошибка при подключении к БД. Работа с базой деталей не доступна.");
             }
         }
 
         private async void refreshDBParts()
         {
-            await db.Parts.LoadAsync();
+            try
+            {
+                await db.Parts.LoadAsync();
+            }
+            catch
+            {
+                MessageBox.Show("Ошибка при подключении к БД. Работа с базой деталей не доступна.");
+                return;
+            }
+            
             DBParts = db.Parts.Local.ToBindingList();
             if (string.IsNullOrEmpty(dBPartSearchText))
                 FilteredDBParts = new ObservableCollection<Part>(DBParts);
             else
                 FilteredDBParts = new ObservableCollection<Part>(DBParts.Where(x => x.Name.ToLower().Contains(dBPartSearchText.ToLower())));
-            DBPartProperties = null;
-            DBPartDescription = "";
-            DBPartImage = null;
+            if(SelectedDBPart == null)
+            {
+                DBPartProperties = null;
+                DBPartDescription = "";
+                DBPartImage = null;
+            }
         }
 
         private async void refreshDBPartInfo(Part currentPart)
         {
-            if (selectedDBPart.Part_PartFeatures == null)
-                return;
+            DBPartDescription = currentPart.Description;
             Dictionary<string, string> properties = new Dictionary<string, string>();
             DBPartImage = await ByteArray_2_BitmapImage(currentPart.Image);
+
+            if (currentPart.Part_PartFeatures == null)
+                return;
             await Task.Run(() => {
                 foreach (Part_PartFeature ppf in currentPart.Part_PartFeatures)
                 {
@@ -266,7 +284,7 @@ namespace assemblyAnalyze
 
         /*==========================================*/
         /*==========================================*/
-        /*ПЕРЕМЕННЫЕ ДЛЯ TabItem "АНАЛИЗ СБОРКИ"*/
+        /*ПЕРЕМЕННЫЕ ДЛЯ ВКЛАДКИ "АНАЛИЗ СБОРКИ"*/
         private string filePath;
 
         private ObservableCollection<AssemblyPart> assemblyParts { get; set; } = new ObservableCollection<AssemblyPart>();
@@ -360,27 +378,40 @@ namespace assemblyAnalyze
                     {
                         if (dsOpenFile.OpenFileDialog("Assembly files|*.iam"))
                         {
-                            if (!OpenedTabItemAssembly)
-                                OpenedTabItemAssembly = true; //открываем TabItem для анализа сборки
-                            assemblyAnalyzer = new AssemblyAnalyzer();
-                            filePath = dsOpenFile.FilePath;
-                            assemblyAnalyzer.OpenAssembly(filePath);
-                            assemblyParts.Clear();
-                            foreach(ApprenticeServerDocument part in assemblyAnalyzer.Parts)
+                            try
                             {
-                                assemblyParts.Add(new AssemblyPart(part.DisplayName,
-                                                                    part.InternalName,
-                                                                    part.RevisionId,
-                                                                    part.DatabaseRevisionId,
-                                                                    part.ComponentDefinition.ModelGeometryVersion,
-                                                                    part.Thumbnail,
-                                                                    AssemblyAnalyzer.getPartProperties(part)));
+                                if (!OpenedTabItemAssembly)
+                                    OpenedTabItemAssembly = true; //открываем TabItem для анализа сборки
+                                assemblyAnalyzer = new AssemblyAnalyzer();
+                                filePath = dsOpenFile.FilePath;
+                                assemblyAnalyzer.OpenAssembly(filePath);
+                                assemblyParts.Clear();
+                                foreach (ApprenticeServerDocument part in assemblyAnalyzer.Parts)
+                                {
+                                    assemblyParts.Add(new AssemblyPart(part.DisplayName,
+                                                                        part.InternalName,
+                                                                        part.RevisionId,
+                                                                        part.DatabaseRevisionId,
+                                                                        part.ComponentDefinition.ModelGeometryVersion,
+                                                                        part.Thumbnail,
+                                                                        AssemblyAnalyzer.getPartProperties(part)));
+                                }
                             }
-                            FilteredAssemblyParts = assemblyParts;
-                            if(!string.IsNullOrEmpty(assemblyPartSearchText))
-                                FilteredAssemblyParts = new ObservableCollection<AssemblyPart>(assemblyParts.Where(x => x.Name.ToLower().Contains(assemblyPartSearchText.ToLower())));
-                            AssemblyPartProps = null;
-                            assemblyAnalyzer = null;
+                            catch (Exception ex)
+                            {
+                                assemblyParts.Clear();
+                                MessageBox.Show(ex.Message);
+                            }
+                            finally
+                            {
+                                AssemblyPartProps = null;
+                                CurAssemblyPartImage = null;
+                                assemblyAnalyzer = null;                        //НА ДАННЫЙ МОМЕНТ ЭТОТ ОБЪЕКТ НЕ НУЖЕН ПОСЛЕ ЧТЕНИЯ СПИСКА ДЕТАЛЕЙ
+                                if (!string.IsNullOrEmpty(assemblyPartSearchText))
+                                    FilteredAssemblyParts = new ObservableCollection<AssemblyPart>(assemblyParts.Where(x => x.Name.ToLower().Contains(assemblyPartSearchText.ToLower())));
+                                else
+                                    FilteredAssemblyParts = assemblyParts;
+                            }
                         }
                     })
                 );
@@ -498,17 +529,14 @@ namespace assemblyAnalyze
             try
             {
                 findedPart = new List<Part>(db.Parts.Where(p => p.InternalName == part.InternalName)); 
-                if (findedPart.Count() == 1)
+                if (findedPart.Count() >= 1)
                 {
-                    ViewModel = new ConfirmActionViewModel($"В базе деталей уже содержится данная деталь под именем \"{findedPart[0].Name}\". Перезаписать данную деталь?");
+                    ViewModel = new ConfirmActionViewModel($"В базе деталей уже содержится данная деталь под именем \"{findedPart[0].Name}\". Всё равно сохранить деталь?");
                     var displayRootRegistry = (Application.Current as App).displayRootRegistry;
                     await displayRootRegistry.ShowModalPresentation(ViewModel);
                     //если ничего не выбрано, отменяем сохранение
-                    if (!ViewModel.ExistsResult)
+                    if (!ViewModel.ExistsResult || !ViewModel.IsConfirmed)
                         return;
-
-                    if (ViewModel.IsConfirmed)
-                        removeDBPart(findedPart[0]);
                 }
                
                 part.IsSaved = true;
@@ -544,6 +572,10 @@ namespace assemblyAnalyze
                 db.Parts.Add(newPart);
                 db.Part_partfeatures.AddRange(part_PartFeatures);
                 await db.SaveChangesAsync();
+            }
+            catch (EntityCommandExecutionException ex)
+            {
+                MessageBox.Show("Ошибка при подключении к БД. Работа с базой деталей не доступна.");
             }
             catch (Exception ex)
             {

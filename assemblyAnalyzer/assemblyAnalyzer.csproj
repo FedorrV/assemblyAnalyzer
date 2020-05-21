@@ -119,10 +119,10 @@
     <Compile Include="Views\ConfirmAction.xaml.cs">
       <DependentUpon>ConfirmAction.xaml</DependentUpon>
     </Compile>
-    <Compile Include="DisplayRootRegistry.cs" />
+    <Compile Include="DisplayRegister.cs" />
     <Compile Include="models\DataContext.cs" />
-    <Compile Include="models\Dct_partfeature.cs" />
-    <Compile Include="models\Mtm_part_partfeature.cs" />
+    <Compile Include="models\PartFeature.cs" />
+    <Compile Include="models\Part_Partfeature.cs" />
     <Compile Include="models\Part.cs" />
     <Compile Include="models\AssemblyPart.cs" />
     <Compile Include="ViewModels\BasicViewModel.cs" />
@@ -144,7 +144,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ViewModels\AnalyzerViewModel.cs" />
+    <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="Services\AssemblyAnalyzer.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

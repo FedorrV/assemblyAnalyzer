@@ -106,7 +106,7 @@
                 </StackPanel>
             </Button>
             <Separator/>
-            <Button Height="35px" Padding="1,0,8,0" IsEnabled="False">
+            <Button Visibility="Hidden" Height="35px" Padding="1,0,8,0" IsEnabled="False">
                 <StackPanel Orientation="Horizontal">
                     <Image Source="/Resource/search.png" Width="20px" Style="{StaticResource BTNImage}"/>
                     <TextBlock Margin="3,0,0,0" VerticalAlignment="Center">Идентифицировать деталь</TextBlock>
@@ -125,10 +125,11 @@
                     <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1" Grid.ColumnSpan="2">
                         <Grid Background="#F0F0F0">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="*"></RowDefinition>
+                                
                                 <RowDefinition Height="auto"></RowDefinition>
+                                <RowDefinition Height="*"></RowDefinition>
                             </Grid.RowDefinitions>
-                            <TreeView Grid.Row="0" Margin="3,3,3,0">
+                            <!--<TreeView Grid.Row="0" Margin="3,3,3,0">
                                 <TextBox>Дерево сборки</TextBox>
                                 <TreeViewItem Header="Базы данных">
                                     <TreeViewItem Header="MS SQL Server" />
@@ -148,8 +149,8 @@
                                         <TreeViewItem Header="PureBasisssssssssssssssssssssssssssssssssssssssc" />
                                     </TreeViewItem>
                                 </TreeViewItem>
-                            </TreeView>
-                            <Grid Grid.Row="1" Width="auto" Height="auto" MaxHeight="170px" Margin="3,0,3,3">
+                            </TreeView>-->
+                            <Grid Grid.Row="0" Width="auto" Height="auto" MaxHeight="170px" Margin="3,0,3,3">
                                 <Border Margin="15px" MaxWidth="120px"
                                         BorderBrush="Gray" BorderThickness="1">
                                     <Image Source="{Binding CurAssemblyPartImage}"></Image>
@@ -182,7 +183,7 @@
                                         <TextBlock Margin="3,0,0,0" VerticalAlignment="Center">Сохранить</TextBlock>
                                     </StackPanel>
                                 </Button>
-                                <Button Height="32px" Padding="4,0,10,0" Margin="0,0,4,0" IsEnabled="False" ToolTip="Удалить деталь из базы деталей"
+                                <Button Visibility="Hidden" Height="32px" Padding="4,0,10,0" Margin="0,0,4,0" IsEnabled="False" ToolTip="Удалить деталь из базы деталей"
                                  Command="{Binding CmdDeleteAssemblyPart}" CommandParameter="{Binding }">
                                     <StackPanel Orientation="Horizontal">
                                         <Image Source="/Resource/removeFromDB.png" Width="20px" Style="{StaticResource BTNImage}"/>
@@ -224,7 +225,7 @@
                         <RowDefinition Height="*"></RowDefinition>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="2*" MaxWidth="700"/>
                         <ColumnDefinition Width="1*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <!--<Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">-->

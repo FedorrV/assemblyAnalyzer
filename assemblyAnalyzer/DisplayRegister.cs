@@ -1,6 +1,7 @@
 ﻿using assemblyAnalyze.Services;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Core;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,7 +9,7 @@ using System.Windows;
 
 namespace assemblyAnalyze
 {
-    public class DisplayRootRegistry
+    public class DisplayRegister
     {
         Dictionary<Type, Type> vmToWindowMapping = new Dictionary<Type, Type>();
 
@@ -82,7 +83,11 @@ namespace assemblyAnalyze
                 window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                 await window.Dispatcher.InvokeAsync(() => window.ShowDialog());
             }
-            catch(Exception ex)
+            catch (EntityCommandExecutionException ex)
+            {
+                MessageBox.Show("Ошибка при подключении к БД. Работа с базой деталей не доступна.");
+            }
+            catch (Exception ex)
             {
                 MessageBox.Show($"{ex.Message}\nФатальная ошибка, программа аварийно закрывается");
                 Environment.Exit(1);
