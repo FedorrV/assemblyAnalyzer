@@ -151,7 +151,7 @@
                                 </TreeViewItem>
                             </TreeView>-->
                             <Grid Grid.Row="0" Width="auto" Height="auto" MaxHeight="170px" Margin="3,0,3,3">
-                                <Border Margin="15px" MaxWidth="120px"
+                                <Border Margin="15px" MaxWidth="220px"
                                         BorderBrush="Gray" BorderThickness="1">
                                     <Image Source="{Binding CurAssemblyPartImage}"></Image>
                                 </Border>
@@ -282,7 +282,7 @@
                                     </TextBlock>
                                 </Border>
                                 <Grid Grid.Row="1" Width="auto" Height="auto" MaxHeight="170px" Margin="3,0,3,3">
-                                    <Border Margin="15px" MaxWidth="120px"
+                                    <Border Margin="15px" MaxWidth="220px"
                                             BorderBrush="Gray" BorderThickness="1">
                                         <Image Source="{Binding DBPartImage}"></Image>
                                     </Border>

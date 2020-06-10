@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using InventorApprentice;
+//using InventorApprentice;
+using RxApprenticeInterop;
 using assemblyAnalyzer.models;
 using System.Data.Entity;
 using assemblyAnalyzer;
@@ -416,37 +417,28 @@ namespace assemblyAnalyze
                     })
                 );
             }
-        }
+        }       
 
-        //команда "сохранить деталь"
-        private OpenDialogWindowCommand<SavePartViewModel> cmdSaveAssemblyPart;
-        public OpenDialogWindowCommand<SavePartViewModel> CmdSaveAssemblyPart
+        private SimpleCommand cmdSaveAssemblyPart;
+        public SimpleCommand CmdSaveAssemblyPart
         {
             get
             {
                 return cmdSaveAssemblyPart ??
-                    (cmdSaveAssemblyPart = new OpenDialogWindowCommand<SavePartViewModel>(
+                    (cmdSaveAssemblyPart = new SimpleCommand(
                     (obj) =>
                     {
-                        SavePartViewModel savePartVM = obj as SavePartViewModel;
-                        
-                        if (savePartVM != null)
-                        {
-                            if (savePartVM.IsSaved)
-                            {
-                                saveAssemblyPartInDB(selectedAssemblyPart, savePartVM.PartName, savePartVM.PartDescription);
-                            }
-                        }
-                        else throw new Exception("Внутренняя ошибка при передаче данных между окнами.");
-                        savePartVM = null;
+                        saveAssemblyPartInDB(selectedAssemblyPart); //;, savePartVM.PartName, savePartVM.PartDescription);
                     },
-                    (obj) => 
+                    (obj) =>
                     {
                         AssemblyPart temp = obj as AssemblyPart;
                         return temp?.IsSaved == false;
                     }));
             }
         }
+
+        
         
         private byte[] BitmapSource_2_ByteArray(BitmapSource bitmap)
         {
@@ -517,14 +509,25 @@ namespace assemblyAnalyze
             });
         }
 
-        private async void saveAssemblyPartInDB(AssemblyPart part, string name, string description)
+        private async void saveAssemblyPartInDB(AssemblyPart part)//, string name, string description)
         {
+
             stdole.IPictureDisp disp = part.Image;
             byte[] ar = null;
             Part newPart = null;
             List<Part_PartFeature> part_PartFeatures = new List<Part_PartFeature>();
             ConfirmActionViewModel ViewModel = null;
-            List<Part> findedPart = null; 
+            List<Part> findedPart = null;
+
+            //подтверждение сохранения
+            var savePartVM = new SavePartViewModel(SelectedAssemblyPart.Name);
+            var displayRootRegistry = (Application.Current as App).displayRootRegistry;
+            await displayRootRegistry.ShowModalPresentation(savePartVM);
+            if (!savePartVM.IsSaved)
+                return;
+
+            string name = savePartVM.PartName;
+            string description = savePartVM.PartDescription;
 
             try
             {
@@ -532,7 +535,7 @@ namespace assemblyAnalyze
                 if (findedPart.Count() >= 1)
                 {
                     ViewModel = new ConfirmActionViewModel($"В базе деталей уже содержится данная деталь под именем \"{findedPart[0].Name}\". Всё равно сохранить деталь?");
-                    var displayRootRegistry = (Application.Current as App).displayRootRegistry;
+                    //var displayRootRegistry = (Application.Current as App).displayRootRegistry;
                     await displayRootRegistry.ShowModalPresentation(ViewModel);
                     //если ничего не выбрано, отменяем сохранение
                     if (!ViewModel.ExistsResult || !ViewModel.IsConfirmed)
